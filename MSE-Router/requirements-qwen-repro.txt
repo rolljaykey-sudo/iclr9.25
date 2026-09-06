@@ -1,0 +1,5 @@
+-r requirements-repro.txt
+
+# Extra runtime dependencies imported by the Qwen-1.8B remote model code.
+tiktoken==0.5.2
+transformers-stream-generator==0.0.4

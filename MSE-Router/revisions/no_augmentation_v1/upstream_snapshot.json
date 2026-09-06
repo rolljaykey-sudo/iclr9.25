@@ -1,0 +1,12 @@
+{
+  "description": "Unmodified original V2 source hashes before the isolated no-augmentation change",
+  "files": {
+    "MSE-Router/mse_router/__init__.py": "68ff95818d4ca73b5bf86d6cf494c7d41d8c68bf162d85251affde929a33af9f",
+    "MSE-Router/mse_router/math_utils.py": "921ab0b3841937dc5b90a5061a38474051caae4a4344004135e1e897f72973cc",
+    "MSE-Router/mse_router/data.py": "4742d82a8809c26f491fdf8becf6f185216f87e4654f471fa7f07c5cf4e2982e",
+    "MSE-Router/mse_router/model.py": "0e7dde3741c88833d67443d624d17a0aec043dc659df92d133acde742ef08c86",
+    "MSE-Router/mse_router/trainer.py": "a09e7dfd81d6e283e53396017fc232b039f349b37d5f3c4a4f9cea7f8baeeb81",
+    "MSE-Router/scripts/run_qwen_mosei_router.py": "c02f8f0fb8d8be2b1199b5dae29fa23e6ef49e7c44dd9f0f1ca8e515f3a92c17",
+    "MSE-Router/tests/test_mse_router.py": "2c5a017f618971d8ef06a1e4bcfe7beb700f7aa449b584f116ea44a4ef8e287e"
+  }
+}

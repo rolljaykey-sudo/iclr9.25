@@ -1,0 +1,25 @@
+# Runtime dependencies used by the released MSE-ChatGLM3-6B path.
+# Torch comes from the cluster-maintained CUDA 11.7 environment used to
+# create .venv-repro; the exact version is asserted by the preflight job.
+-r requirements-smoke.txt
+
+addict==2.4.0
+datasets==2.15.0
+dill==0.3.7
+gast==0.5.4
+matplotlib==3.8.2
+modelscope==1.10.0
+multiprocess==0.70.15
+nvidia-ml-py==12.535.133
+oss2==2.18.3
+pandas==2.1.4
+Pillow==10.0.1
+pyarrow==14.0.1
+pyarrow-hotfix==0.6
+PyYAML==6.0.1
+scikit-learn==1.3.2
+scipy==1.11.4
+simplejson==3.19.2
+sortedcontainers==2.4.0
+tqdm==4.66.1
+yapf==0.40.2

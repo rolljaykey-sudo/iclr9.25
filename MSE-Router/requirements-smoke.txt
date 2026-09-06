@@ -1,0 +1,13 @@
+# Minimal, conflict-free environment for the ChatGLM3 checkpoint smoke test.
+# The versions below match the versions pinned by the upstream project where
+# they affect model loading and generation.
+torch==2.0.1
+transformers==4.36.1
+huggingface-hub==0.26.2
+fsspec==2023.10.0
+tokenizers==0.15.0
+sentencepiece==0.1.99
+safetensors==0.4.1
+numpy==1.26.2
+cmake==3.28.1
+lit==17.0.6
