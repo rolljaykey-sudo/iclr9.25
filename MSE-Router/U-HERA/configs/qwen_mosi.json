@@ -1,0 +1,31 @@
+{
+  "architecture": "u_hera_v1",
+  "seed": 1111,
+  "dataset": "mosi",
+  "dataset_path": "/gpfs/work/cpt/jiachenhou23/datasets/MSA/data/CMU-MOSI/Processed/unaligned_50.pkl",
+  "dataset_sha256": "78e0f8b5ef8ff71558e7307848fc1fa929ecb078203f565ab22b9daab2e02524",
+  "model_path": "/gpfs/work/cpt/jiachenhou23/models/Qwen/Qwen-1_8B",
+  "output_root": "/gpfs/work/cpt/jiachenhou23/U-HERA/outputs/qwen_mosi/seed_1111",
+  "splits": {"train": 1284, "valid": 229, "test": 686},
+  "text_max_length": 50,
+  "task_prompt": "Please predict the sentiment intensity of the above multimodal content in the range [-3.0, +3.0]. Assistant: The sentiment is",
+  "model": {
+    "dim": 256, "slots": 8, "heads": 4, "ffn_dim": 512, "dropout": 0.1,
+    "audio_features": 5, "vision_features": 20, "audio_hidden": 64, "vision_hidden": 32,
+    "gamma": 0.1, "gate_temperature": 1.0, "max_new_tokens": 4
+  },
+  "training": {
+    "learning_rate": 0.0005, "weight_decay": 0.01, "adam_epsilon": 0.0001,
+    "warmup_fraction": 0.1, "gradient_clip": 1.0,
+    "microbatch": 4, "accumulation_steps": 4, "num_workers": 0,
+    "utility_weight": 0.1, "utility_temperature_floor": 0.001,
+    "progress_interval": 40, "augmentation": "none",
+    "stages": {
+      "evidence_warmup": {"max_epochs": 40, "patience": 10},
+      "router_warmup": {"max_epochs": 10, "patience": 3},
+      "joint": {"max_epochs": 40, "patience": 10}
+    }
+  },
+  "analysis": {"deletion_fraction": 0.25, "random_seed": 1111},
+  "runtime": {"dtype": "float16", "gradient_checkpointing": false, "use_flash_attn": false}
+}
