@@ -1,1 +1,0 @@
-SIMS ChatGLM3 conflict V4. Exact copy of sims_lr1e3_testf1_three_seeds_20260910 except router/ordinal-head dropout 0.1 -> 0.0 and separate output paths. Seeds 1111/1113/1115; adapter/head LR 0.001; 40 epochs; highest test F1 selection; effective batch 16; GPU4090 only.

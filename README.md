@@ -1,61 +1,65 @@
-# Final Code：测试集 F1 选模版本
+# ChatGLM3：四个情感数据集
 
-本仓库从 `/gpfs/work/cpt/jiachenhou23/mse router new conflict` 独立复制，
-本地副本为 `/gpfs/work/cpt/jiachenhou23/final code`。
-仅保留实际按**测试集 F1 最大值**选择检查点的 13 个实验版本，源码已补充中文注释。
-原始目录不变；所有层级的 `outputs`、虚拟环境和 Python 缓存均未复制。
+仅保留 ChatGLM3 在 **MOSI、MOSEI、SIMS、SIMS V2** 上的四份代码，各数据集一份。
+源码已补充中文注释；所有 `outputs`、虚拟环境、缓存和其他实验版本均未打包。
+本地目录：`/gpfs/work/cpt/jiachenhou23/final code`。
 
-## 选模规则
+| 目录 | 数据集 | 选模规则 | 适配器 / 诊断头与路由器学习率 | 路由器与诊断头 dropout |
+| --- | --- | --- | --- | --- |
+| [mosi](mosi/) | MOSI | 测试集 `Non0_F1_score` 最大 | 0.001 / 0.001 | 0.1 |
+| [mosei](mosei/) | MOSEI | 测试集 `Non0_F1_score` 最大 | 0.0001 / 0.0001 | 0.1 |
+| [sims](sims/) | SIMS | 测试集 `F1_score` 最大 | 0.001 / 0.001 | 0.0 |
+| [simsv2](simsv2/) | SIMS V2 | 测试集 `MAE` 最小 | 0.0001 / 0.0001 | 0.3 |
 
-| 数据集 | 选模指标 | 规则 |
-| --- | --- | --- |
-| MOSI、MOSEI | 测试集 `Non0_F1_score` | 40 轮中取最大值，F1 并列保留最早轮次 |
-| SIMS | 测试集 `F1_score` | 40 轮中取最大值，F1 并列保留最早轮次 |
+四份代码均沿用所选源版本的 40 轮联合训练、有效批量 16 和随机种子。
+指标并列时保留最早轮次，最后重新加载选中的检查点评估；不执行温度校准。
+SIMS V2 保留原来的测试集 MAE 选模方式。
 
-这些版本使用联合训练，最终重新加载所选检查点进行评估，`fit` 不执行温度校准。
-MAE、相关系数等仍作为伴随指标记录，**不参与检查点选择或并列比较**。
-验证集选模、测试集 MAE 选模版本以及指向旧 MAE 版本的两个遗留启动脚本已从副本移除。
+## 文件说明
 
-## 保留的实验
+每个数据集目录包含：
 
-每个 `revisions/<版本>/` 都保存对应的 `mse_router/` 实现、`scripts/` 入口及配置。
-按目录内的实际配置选择入口；不要把不同版本的训练器和配置混用。
+- `mse_router/model.py`：ChatGLM3 专用模型、音视频编码与伪 token、诊断头、冲突路由、生成及损失。
+- `mse_router/math_utils.py`、`sequence.py`、`data.py`：数学工具、有序 token 整理和数据处理。
+- `mse_router/trainer.py`：联合训练、测试集选模、检查点保存与评估。
+- `mse_router/diagnostics.py`：固定输入下的路由权重诊断工具。
+- `scripts/run_chatglm3_<数据集>.py`：该数据集的唯一运行入口。
+- `scripts/experiment.py`、`chatglm_setup.py`：预检、配置、文件检查和结果汇总。
+- `scripts/train.slurm`：该数据集的作业脚本，代码和输出位置已指向本副本。
 
-| 数据集 | 实验目录 | 主要入口 |
-| --- | --- | --- |
-| MOSEI | [mosei_lr1e4_testf1_20260910](revisions/mosei_lr1e4_testf1_20260910/) | `scripts/run_chatglm3_mosei.py` |
-| MOSEI | [mosei_lr5e3_head1e3_testf1_20260910](revisions/mosei_lr5e3_head1e3_testf1_20260910/) | `scripts/run_chatglm3_mosei.py` |
-| MOSI | [mosi_backbone_lr1e3_d01_20260912](revisions/mosi_backbone_lr1e3_d01_20260912/) | `scripts/run_transfer_mosi.py` |
-| MOSI | [mosi_llama32_lr1e3_d01_20260912](revisions/mosi_llama32_lr1e3_d01_20260912/) | `scripts/run_transfer_mosi.py` |
-| MOSI | [mosi_lr1e3_d00_three_seeds_20260910](revisions/mosi_lr1e3_d00_three_seeds_20260910/) | `scripts/run_chatglm3_mosi.py` |
-| MOSI | [mosi_lr1e4_testf1_full40_20260910](revisions/mosi_lr1e4_testf1_full40_20260910/) | `scripts/run_chatglm3_mosi.py` |
-| MOSI | [mosi_testf1_full40_20260909](revisions/mosi_testf1_full40_20260909/) | `scripts/run_chatglm3_mosi.py` |
-| SIMS | [sims_backbone_lr1e3_d00_sat3090_20260912](revisions/sims_backbone_lr1e3_d00_sat3090_20260912/) | `scripts/run_transfer_sims.py` |
-| SIMS | [sims_lr1e3_d00_testf1_three_seeds_20260910](revisions/sims_lr1e3_d00_testf1_three_seeds_20260910/) | `scripts/run_chatglm3_sims.py` |
-| SIMS | [sims_lr1e3_testf1_three_seeds_20260910](revisions/sims_lr1e3_testf1_three_seeds_20260910/) | `scripts/run_chatglm3_sims.py` |
-| SIMS | [sims_lr1e4_testf1_three_seeds_20260910](revisions/sims_lr1e4_testf1_three_seeds_20260910/) | `scripts/run_chatglm3_sims.py` |
-| SIMS | [sims_lr5e3_head1e3_s1113_s1115_20260910](revisions/sims_lr5e3_head1e3_s1113_s1115_20260910/) | `scripts/run_chatglm3_sims.py` |
-| SIMS | [sims_testf1_extra_full40_20260909](revisions/sims_testf1_extra_full40_20260909/) | `scripts/run_chatglm3_sims.py` |
+数据集配置分别记录在 `launch_spec.json` 或 `configs/<数据集>.json` 中。
+保留版本的准确来源和本次检查结果见 [EXPORT_MANIFEST.json](EXPORT_MANIFEST.json)。
 
-## 中文注释导航
+## 环境和运行
 
-- `mse_router/math_utils.py`：连续标签插值、熵、Wasserstein-1 冲突、缺失模态权重。
-- `mse_router/model.py`：冻结骨干、单模态诊断、30 维路由输入、音视频门控、生成与辅助损失。
-- `mse_router/sequence.py`：有序 token 压紧、左侧填充及监督标签对齐。
-- `mse_router/data.py`：视频分组划分、批次迁移、音视频扰动及模态存在掩码。
-- `mse_router/trainer.py`：梯度累积、混合精度、测试 F1 选模、保存及重载检查点。
-- `mse_router/backbone_model.py`：不同语言模型的加载方式和前向接口。
-- `scripts/`：数据集与骨干配置、预检、随机种子入口及 Slurm 作业说明。
+仍使用工作区已有的 `MSE-Adapter/MSE-ChatGLM3-6B` 上游组件、数据与
+`models/THUDM/chatglm3-6b-base` 权重。可用 `MSE_ADAPTER_ROOT` 指定上游根目录，
+用 `--dataset-path`、`--model-path`、`--output-root` 指定本地资源位置。
+Slurm 脚本沿用原实验的共享 Python 解释器和资源参数，实际提交前应核对可用资源。
+本次整理没有启动训练。
 
-## 环境与历史记录
+在适用的 Python 环境中，先查看对应入口的参数，例如：
 
-本次整理保留原始算法、超参数、配置和路径常量。源码仍依赖工作区外部的
-`MSE-Adapter`、数据、预训练模型及对应 Python 环境，这些资源未打包。
-Slurm 脚本中的代码、日志和输出路径仍是原始 HPC 实验路径；在副本中重跑时，
-应将它们设置为自己的代码目录和独立输出目录，并在有效 Slurm GPU 分配中执行。
-目录名称含空格，Shell 中请为路径加引号。
+```bash
+python mosi/scripts/run_chatglm3_mosi.py --help
+```
 
-注释会改变源码 SHA-256，所以副本需要重新生成预检记录后才能训练。
-各版本原有的 `validation.json`、`source_hashes.json`、`baseline_verification.json`
-等文件保留为历史记录，不代表注释后版本的新验证结果。
-本次导出的文件清单、来源散列和检查结果见 [EXPORT_MANIFEST.json](EXPORT_MANIFEST.json)。
+GPU 预检和训练应在有效 Slurm GPU 分配中执行：
+
+```bash
+python mosi/scripts/run_chatglm3_mosi.py preflight
+python mosi/scripts/run_chatglm3_mosi.py train --seed 1111
+```
+
+其余数据集使用各自同名入口。默认结果位于 `<数据集>/outputs/`；
+批处理脚本按 `task_<seed>/seed_<seed>/` 隔离结果。
+提交批处理脚本前先创建该数据集的 `outputs/slurm/` 日志目录。
+重新运行需使用本副本生成的预检记录；旧目录的预检源码散列不再适用。
+路径含空格，Shell 中请加引号。
+
+## 本次检查
+
+四个数据集均通过轻量 ChatGLM 接口替身的模型对照：初始参数、完整及缺失模态前向、
+损失、梯度和生成结果与源实现一致，冻结骨干保持无参数梯度。
+训练、评估和选模方法的语法树与源版本一致；配置、文件元数据和选模模拟检查通过。
+这些检查未加载完整预训练权重，也未执行完整 GPU 训练。

@@ -1,1 +1,0 @@
-MOSI conflict V4 / ChatGLM3. Seeds 1111,1113,1115; adapter and head/router LR 0.0001; dropout 0.1; batch 4 x accumulation 4. Full 40 epochs, highest test Non0_F1_score selection, earliest on ties; no calibration or early stopping. GPU3090/GPU4090; one GPU per seed.

@@ -2,61 +2,414 @@
   "source_root": "/gpfs/work/cpt/jiachenhou23/mse router new conflict",
   "export_root": "/gpfs/work/cpt/jiachenhou23/final code",
   "repository": "https://github.com/rolljaykey-sudo/iclr9.25",
-  "selection_policy": "Keep only existing test-set maximum-F1 checkpoint-selection variants.",
-  "kept_revisions": [
-    "mosei_lr1e4_testf1_20260910",
-    "mosei_lr5e3_head1e3_testf1_20260910",
-    "mosi_backbone_lr1e3_d01_20260912",
-    "mosi_llama32_lr1e3_d01_20260912",
-    "mosi_lr1e3_d00_three_seeds_20260910",
-    "mosi_lr1e4_testf1_full40_20260910",
-    "mosi_testf1_full40_20260909",
-    "sims_backbone_lr1e3_d00_sat3090_20260912",
-    "sims_lr1e3_d00_testf1_three_seeds_20260910",
-    "sims_lr1e3_testf1_three_seeds_20260910",
-    "sims_lr1e4_testf1_three_seeds_20260910",
-    "sims_lr5e3_head1e3_s1113_s1115_20260910",
-    "sims_testf1_extra_full40_20260909"
+  "backbone": "chatglm3",
+  "datasets": {
+    "mosi": {
+      "source_revision": "mosi_testf1_full40_20260909",
+      "adapter_lr": 0.001,
+      "head_router_lr": 0.001,
+      "dropout": 0.1,
+      "selection_metric": "Non0_F1_score",
+      "seeds": [
+        1111,
+        2222,
+        3333
+      ]
+    },
+    "mosei": {
+      "source_revision": "mosei_lr1e4_testf1_20260910",
+      "adapter_lr": 0.0001,
+      "head_router_lr": 0.0001,
+      "dropout": 0.1,
+      "selection_metric": "Non0_F1_score",
+      "seeds": [
+        1111,
+        1113,
+        1115
+      ]
+    },
+    "sims": {
+      "source_revision": "sims_lr1e3_d00_testf1_three_seeds_20260910",
+      "adapter_lr": 0.001,
+      "head_router_lr": 0.001,
+      "dropout": 0.0,
+      "selection_metric": "F1_score",
+      "seeds": [
+        1111,
+        1113,
+        1115
+      ]
+    },
+    "simsv2": {
+      "source_revision": "simsv2_lr1e4_d03_five_seeds_20260910",
+      "adapter_lr": 0.0001,
+      "head_router_lr": 0.0001,
+      "dropout": 0.3,
+      "selection_metric": "MAE",
+      "seeds": [
+        1111,
+        2222,
+        3333,
+        1113,
+        1115
+      ]
+    }
+  },
+  "changes": [
+    "Keep one existing ChatGLM3 configuration per dataset.",
+    "Extract the ChatGLM3 model path and remove other-backbone loaders and entry points.",
+    "Preserve original training, losses, dataset configurations, seeds and selection methods.",
+    "MOSI/MOSEI select maximum test Non0_F1_score; SIMS selects maximum test F1_score; SIMS V2 preserves minimum test MAE.",
+    "All ties retain the earliest epoch; no temperature calibration.",
+    "Redirect code and output locations to the independent copy; retain shared external environments, datasets, upstream ChatGLM3 code and weights."
   ],
-  "removed_revisions": [
-    "mosi_testselect_full40_20260909",
-    "sims_full40_20260909",
-    "sims_testselect_full40_20260909",
-    "simsv2_lr1e4_d00_three_seeds_20260910",
-    "simsv2_lr1e4_d01_three_seeds_20260910",
-    "simsv2_lr1e4_d03_five_seeds_20260910",
-    "simsv2_lr1e4_d03_testselect_full40_20260909",
-    "simsv2_testselect_full40_20260909"
-  ],
-  "removed_stale_launchers": [
-    "revisions/mosi_testf1_full40_20260909/scripts/train_testbest_full40.slurm",
-    "revisions/mosi_testf1_full40_20260909/scripts/train_testbest_full40_extra.slurm"
-  ],
-  "removed_root_validation_selected_code": [
-    "mse_router/",
-    "scripts/",
-    "tests/",
-    "provenance/",
-    "requirements-repro.txt",
-    "requirements-qwen-repro.txt"
-  ],
-  "excluded_paths": [
+  "excluded": [
     "outputs/",
     ".venv*",
     "__pycache__/",
     "*.pyc",
-    ".pytest_cache/",
-    "source .git/"
+    "other experiment revisions",
+    "historical result and validation files"
   ],
   "validation": {
     "status": "passed",
-    "json_files_checked": 36,
-    "python_files_ast_identical": 158,
-    "chinese_python_comment_lines": 2132,
-    "shell_files_checked": 23,
+    "json_files_checked": 4,
+    "python_files_checked": 40,
+    "chinese_comment_lines": 548,
+    "slurm_files_checked": 4,
+    "model_equivalence": [
+      {
+        "dataset": "mosi",
+        "status": "passed",
+        "checks": [
+          "same_initial_parameters",
+          "same_complete_and_missing_modality_forward",
+          "same_losses_and_gradients",
+          "frozen_backbone",
+          "same_generation_and_parser",
+          "same_dropout_and_anchor_range",
+          "training_and_selection_methods_ast_unchanged"
+        ]
+      },
+      {
+        "dataset": "mosei",
+        "status": "passed",
+        "checks": [
+          "same_initial_parameters",
+          "same_complete_and_missing_modality_forward",
+          "same_losses_and_gradients",
+          "frozen_backbone",
+          "same_generation_and_parser",
+          "same_dropout_and_anchor_range",
+          "training_and_selection_methods_ast_unchanged"
+        ]
+      },
+      {
+        "dataset": "sims",
+        "status": "passed",
+        "checks": [
+          "same_initial_parameters",
+          "same_complete_and_missing_modality_forward",
+          "same_losses_and_gradients",
+          "frozen_backbone",
+          "same_generation_and_parser",
+          "same_dropout_and_anchor_range",
+          "training_and_selection_methods_ast_unchanged"
+        ]
+      },
+      {
+        "dataset": "simsv2",
+        "status": "passed",
+        "checks": [
+          "same_initial_parameters",
+          "same_complete_and_missing_modality_forward",
+          "same_losses_and_gradients",
+          "frozen_backbone",
+          "same_generation_and_parser",
+          "same_dropout_and_anchor_range",
+          "training_and_selection_methods_ast_unchanged"
+        ]
+      }
+    ],
+    "configuration_equivalence": [
+      {
+        "dataset": "mosi",
+        "status": "passed",
+        "snapshot": {
+          "datasetName": "mosi",
+          "language": "en",
+          "seq_lens": [
+            50,
+            375,
+            500
+          ],
+          "feature_dims": [
+            4096,
+            5,
+            20
+          ],
+          "train_samples": 1284,
+          "a_lstm_hidden_size": 64,
+          "a_lstm_layers": 1,
+          "a_lstm_dropout": 0.0,
+          "v_lstm_hidden_size": 32,
+          "v_lstm_layers": 1,
+          "v_lstm_dropout": 0.0,
+          "task_specific_prompt": "Please predict the sentiment intensity of the above multimodal content in the range [-3.0, 3.0]. response: The sentiment is",
+          "diagnostic_prompt": "Predict this modality's sentiment intensity from -3 to +3.",
+          "router_hidden_size": 4096,
+          "router_aux_weight": 0.3,
+          "router_variant": "full",
+          "gradient_checkpointing": true,
+          "training_settings": {
+            "adapter_lr": 0.001,
+            "head_router_lr": 0.001,
+            "weight_decay": 0.01,
+            "adam_epsilon": 0.0001,
+            "warmup_fraction": 0.1,
+            "gradient_clip": 1.0,
+            "accumulation_steps": 4,
+            "stage1_max_epochs": 40,
+            "stage1_patience": 41,
+            "progress_interval": 100,
+            "quality_gate_epoch": 0,
+            "quality_gate_max_mae": 0.72,
+            "quality_gate_min_corr": 0.3
+          },
+          "seeds": [
+            1111,
+            2222,
+            3333
+          ],
+          "splits": {
+            "train": 1284,
+            "valid": 229,
+            "test": 686
+          },
+          "dataset_size": 554181170,
+          "dataset_sha256": "78e0f8b5ef8ff71558e7307848fc1fa929ecb078203f565ab22b9daab2e02524",
+          "model_path": "/gpfs/work/cpt/jiachenhou23/models/THUDM/chatglm3-6b-base",
+          "dataset_path": "/gpfs/work/cpt/jiachenhou23/datasets/MSA/data/CMU-MOSI/Processed/unaligned_50.pkl",
+          "source_files_exist": true,
+          "files_valid": true
+        },
+        "checks": [
+          "same_dataset_model_prompts_dimensions_seeds_training_settings",
+          "source_files_exist",
+          "model_and_dataset_metadata_valid",
+          "outputs_redirected_to_copy"
+        ]
+      },
+      {
+        "dataset": "mosei",
+        "status": "passed",
+        "snapshot": {
+          "datasetName": "mosei",
+          "language": "en",
+          "seq_lens": [
+            50,
+            500,
+            375
+          ],
+          "feature_dims": [
+            4096,
+            74,
+            35
+          ],
+          "train_samples": 16326,
+          "a_lstm_hidden_size": 64,
+          "a_lstm_layers": 1,
+          "a_lstm_dropout": 0.0,
+          "v_lstm_hidden_size": 32,
+          "v_lstm_layers": 1,
+          "v_lstm_dropout": 0.0,
+          "task_specific_prompt": "Please predict the sentiment intensity of the above multimodal content in the range [-3.0, 3.0]. response: The sentiment is",
+          "diagnostic_prompt": "Predict this modality's sentiment intensity from -3 to +3.",
+          "router_hidden_size": 4096,
+          "router_aux_weight": 0.3,
+          "router_variant": "full",
+          "gradient_checkpointing": true,
+          "training_settings": {
+            "adapter_lr": 0.0001,
+            "head_router_lr": 0.0001,
+            "weight_decay": 0.01,
+            "adam_epsilon": 0.0001,
+            "warmup_fraction": 0.1,
+            "gradient_clip": 1.0,
+            "accumulation_steps": 4,
+            "stage1_max_epochs": 40,
+            "stage1_patience": 41,
+            "progress_interval": 100,
+            "quality_gate_epoch": 0,
+            "quality_gate_max_mae": 0.72,
+            "quality_gate_min_corr": 0.3
+          },
+          "seeds": [
+            1111,
+            1113,
+            1115
+          ],
+          "splits": {
+            "train": 16326,
+            "valid": 1871,
+            "test": 4659
+          },
+          "dataset_size": 13652131313,
+          "dataset_sha256": "ad8b23d50557045e7d47959ce6c5b955d8d983f2979c7d9b7b9226f6dd6fec1f",
+          "model_path": "/gpfs/work/cpt/jiachenhou23/models/THUDM/chatglm3-6b-base",
+          "dataset_path": "/gpfs/work/cpt/jiachenhou23/datasets/MSA/data/CMU-MOSEI/Processed/unaligned_50.pkl",
+          "source_files_exist": true,
+          "files_valid": true
+        },
+        "checks": [
+          "same_dataset_model_prompts_dimensions_seeds_training_settings",
+          "source_files_exist",
+          "model_and_dataset_metadata_valid",
+          "outputs_redirected_to_copy"
+        ]
+      },
+      {
+        "dataset": "sims",
+        "status": "passed",
+        "snapshot": {
+          "datasetName": "sims",
+          "language": "cn",
+          "seq_lens": [
+            50,
+            400,
+            55
+          ],
+          "feature_dims": [
+            4096,
+            33,
+            709
+          ],
+          "train_samples": 1368,
+          "a_lstm_hidden_size": 64,
+          "a_lstm_layers": 1,
+          "a_lstm_dropout": 0.0,
+          "v_lstm_hidden_size": 64,
+          "v_lstm_layers": 1,
+          "v_lstm_dropout": 0.0,
+          "task_specific_prompt": "请对上述多模态内容的情感强度进行预测，范围在[-1.0, 1.0]之间。响应: 情感为",
+          "diagnostic_prompt": "请预测该模态的情感强度，范围为-1到+1。",
+          "router_hidden_size": 4096,
+          "router_aux_weight": 0.3,
+          "router_variant": "full",
+          "gradient_checkpointing": true,
+          "training_settings": {
+            "adapter_lr": 0.001,
+            "head_router_lr": 0.001,
+            "weight_decay": 0.01,
+            "adam_epsilon": 0.0001,
+            "warmup_fraction": 0.1,
+            "gradient_clip": 1.0,
+            "accumulation_steps": 4,
+            "stage1_max_epochs": 40,
+            "stage1_patience": 41,
+            "progress_interval": 100,
+            "quality_gate_epoch": 0,
+            "quality_gate_max_mae": 0.72,
+            "quality_gate_min_corr": 0.3
+          },
+          "seeds": [
+            1111,
+            1113,
+            1115
+          ],
+          "splits": {
+            "train": 1368,
+            "valid": 456,
+            "test": 457
+          },
+          "dataset_size": 1228189354,
+          "dataset_sha256": "cc26ab4c1128cd58ebfb2b8ecfc32ab8088587f89abb2f467760298035118b20",
+          "model_path": "/gpfs/work/cpt/jiachenhou23/models/THUDM/chatglm3-6b-base",
+          "dataset_path": "/gpfs/work/cpt/jiachenhou23/MSE-Router/derived_data/CH-SIMS/unaligned_39_router_fp16_safe.pkl",
+          "source_files_exist": true,
+          "files_valid": true
+        },
+        "checks": [
+          "same_dataset_model_prompts_dimensions_seeds_training_settings",
+          "source_files_exist",
+          "model_and_dataset_metadata_valid",
+          "outputs_redirected_to_copy"
+        ]
+      },
+      {
+        "dataset": "simsv2",
+        "status": "passed",
+        "snapshot": {
+          "datasetName": "simsv2",
+          "language": "cn",
+          "seq_lens": [
+            50,
+            925,
+            232
+          ],
+          "feature_dims": [
+            4096,
+            25,
+            177
+          ],
+          "train_samples": 2722,
+          "a_lstm_hidden_size": 64,
+          "a_lstm_layers": 1,
+          "a_lstm_dropout": 0.0,
+          "v_lstm_hidden_size": 64,
+          "v_lstm_layers": 1,
+          "v_lstm_dropout": 0.0,
+          "task_specific_prompt": "请对上述多模态内容的情感强度进行预测，范围在[-1.0, 1.0]之间。响应: 情感为",
+          "diagnostic_prompt": "请预测该模态的情感强度，范围为-1到+1。",
+          "router_hidden_size": 4096,
+          "router_aux_weight": 0.3,
+          "router_variant": "full",
+          "gradient_checkpointing": true,
+          "training_settings": {
+            "adapter_lr": 0.0001,
+            "head_router_lr": 0.0001,
+            "weight_decay": 0.01,
+            "adam_epsilon": 0.0001,
+            "warmup_fraction": 0.1,
+            "gradient_clip": 1.0,
+            "accumulation_steps": 4,
+            "stage1_max_epochs": 40,
+            "stage1_patience": 41,
+            "progress_interval": 100,
+            "quality_gate_epoch": 0,
+            "quality_gate_max_mae": 0.72,
+            "quality_gate_min_corr": 0.3
+          },
+          "seeds": [
+            1111,
+            2222,
+            3333,
+            1113,
+            1115
+          ],
+          "splits": {
+            "train": 2722,
+            "valid": 647,
+            "test": 1034
+          },
+          "dataset_size": 3620390813,
+          "dataset_sha256": "f8fd9a1dd070588a714ff357b00f31d5bb93277b4e502cf2dc4ff718a95fc49b",
+          "model_path": "/gpfs/work/cpt/jiachenhou23/models/THUDM/chatglm3-6b-base",
+          "dataset_path": "/gpfs/work/cpt/jiachenhou23/datasets/MSA/data/SIMS_V2/ch-simsv2s.pkl",
+          "source_files_exist": true,
+          "files_valid": true
+        },
+        "checks": [
+          "same_dataset_model_prompts_dimensions_seeds_training_settings",
+          "source_files_exist",
+          "model_and_dataset_metadata_valid",
+          "outputs_redirected_to_copy"
+        ]
+      }
+    ],
     "selection_probes": [
       {
-        "revision": "mosei_lr1e4_testf1_20260910",
+        "revision": "mosi",
         "status": "passed",
         "metric": "Non0_F1_score",
         "simulated_epochs": 40,
@@ -71,7 +424,7 @@
         ]
       },
       {
-        "revision": "mosei_lr5e3_head1e3_testf1_20260910",
+        "revision": "mosei",
         "status": "passed",
         "metric": "Non0_F1_score",
         "simulated_epochs": 40,
@@ -86,82 +439,7 @@
         ]
       },
       {
-        "revision": "mosi_backbone_lr1e3_d01_20260912",
-        "status": "passed",
-        "metric": "Non0_F1_score",
-        "simulated_epochs": 40,
-        "selected_epoch": 3,
-        "checks": [
-          "test_split_only",
-          "maximum_f1",
-          "earliest_tie_despite_lower_mae",
-          "full_40_epochs",
-          "no_calibration",
-          "reload_selected_checkpoint"
-        ]
-      },
-      {
-        "revision": "mosi_llama32_lr1e3_d01_20260912",
-        "status": "passed",
-        "metric": "Non0_F1_score",
-        "simulated_epochs": 40,
-        "selected_epoch": 3,
-        "checks": [
-          "test_split_only",
-          "maximum_f1",
-          "earliest_tie_despite_lower_mae",
-          "full_40_epochs",
-          "no_calibration",
-          "reload_selected_checkpoint"
-        ]
-      },
-      {
-        "revision": "mosi_lr1e3_d00_three_seeds_20260910",
-        "status": "passed",
-        "metric": "Non0_F1_score",
-        "simulated_epochs": 40,
-        "selected_epoch": 3,
-        "checks": [
-          "test_split_only",
-          "maximum_f1",
-          "earliest_tie_despite_lower_mae",
-          "full_40_epochs",
-          "no_calibration",
-          "reload_selected_checkpoint"
-        ]
-      },
-      {
-        "revision": "mosi_lr1e4_testf1_full40_20260910",
-        "status": "passed",
-        "metric": "Non0_F1_score",
-        "simulated_epochs": 40,
-        "selected_epoch": 3,
-        "checks": [
-          "test_split_only",
-          "maximum_f1",
-          "earliest_tie_despite_lower_mae",
-          "full_40_epochs",
-          "no_calibration",
-          "reload_selected_checkpoint"
-        ]
-      },
-      {
-        "revision": "mosi_testf1_full40_20260909",
-        "status": "passed",
-        "metric": "Non0_F1_score",
-        "simulated_epochs": 40,
-        "selected_epoch": 3,
-        "checks": [
-          "test_split_only",
-          "maximum_f1",
-          "earliest_tie_despite_lower_mae",
-          "full_40_epochs",
-          "no_calibration",
-          "reload_selected_checkpoint"
-        ]
-      },
-      {
-        "revision": "sims_backbone_lr1e3_d00_sat3090_20260912",
+        "revision": "sims",
         "status": "passed",
         "metric": "F1_score",
         "simulated_epochs": 40,
@@ -176,1427 +454,390 @@
         ]
       },
       {
-        "revision": "sims_lr1e3_d00_testf1_three_seeds_20260910",
+        "revision": "simsv2",
         "status": "passed",
-        "metric": "F1_score",
+        "metric": "MAE",
         "simulated_epochs": 40,
-        "selected_epoch": 3,
+        "selected_epoch": 1,
         "checks": [
           "test_split_only",
-          "maximum_f1",
-          "earliest_tie_despite_lower_mae",
-          "full_40_epochs",
-          "no_calibration",
-          "reload_selected_checkpoint"
-        ]
-      },
-      {
-        "revision": "sims_lr1e3_testf1_three_seeds_20260910",
-        "status": "passed",
-        "metric": "F1_score",
-        "simulated_epochs": 40,
-        "selected_epoch": 3,
-        "checks": [
-          "test_split_only",
-          "maximum_f1",
-          "earliest_tie_despite_lower_mae",
-          "full_40_epochs",
-          "no_calibration",
-          "reload_selected_checkpoint"
-        ]
-      },
-      {
-        "revision": "sims_lr1e4_testf1_three_seeds_20260910",
-        "status": "passed",
-        "metric": "F1_score",
-        "simulated_epochs": 40,
-        "selected_epoch": 3,
-        "checks": [
-          "test_split_only",
-          "maximum_f1",
-          "earliest_tie_despite_lower_mae",
-          "full_40_epochs",
-          "no_calibration",
-          "reload_selected_checkpoint"
-        ]
-      },
-      {
-        "revision": "sims_lr5e3_head1e3_s1113_s1115_20260910",
-        "status": "passed",
-        "metric": "F1_score",
-        "simulated_epochs": 40,
-        "selected_epoch": 3,
-        "checks": [
-          "test_split_only",
-          "maximum_f1",
-          "earliest_tie_despite_lower_mae",
-          "full_40_epochs",
-          "no_calibration",
-          "reload_selected_checkpoint"
-        ]
-      },
-      {
-        "revision": "sims_testf1_extra_full40_20260909",
-        "status": "passed",
-        "metric": "F1_score",
-        "simulated_epochs": 40,
-        "selected_epoch": 3,
-        "checks": [
-          "test_split_only",
-          "maximum_f1",
-          "earliest_tie_despite_lower_mae",
+          "minimum_mae",
+          "earliest_tie_despite_higher_f1",
           "full_40_epochs",
           "no_calibration",
           "reload_selected_checkpoint"
         ]
       }
     ],
-    "probe_method": "Run actual fit, _fit_stage, checkpoint save/load methods with synthetic metrics and mocked training/torch I/O; no GPU or training workload.",
-    "secret_pattern_findings": 0,
-    "full_training_run": false,
-    "historical_validation_records_retained_as_history_only": true
+    "full_pretrained_weights_loaded": false,
+    "gpu_training_executed": false
   },
   "files": {
     ".gitignore": {
       "sha256": "81737527c65e0987aba5c330e17039ae0cbfa6900d194f049347c0d39a4b9d42",
-      "bytes": 250,
-      "source_sha256": "60e8f580e1354bc68221b379c6322301957687b4673eddcb43772df615680e32"
+      "bytes": 250
     },
     "README.md": {
-      "sha256": "e50ceae26d7b1b0a361abc02523eef9ddbfaf98430a605730cdcad2e288c0c51",
-      "bytes": 4541,
-      "source_sha256": "f56506382278d53c698102a0c315a1e4884e47cef41d620acfcce085a67e878d"
+      "sha256": "cce035a13f8253673d29bacb559b2f1e84cbc58d6ed4c0f361c4bdd02e54e6a0",
+      "bytes": 3492
     },
-    "revisions/mosei_lr1e4_testf1_20260910/launch_spec.json": {
-      "sha256": "6da25cdc474b2a514607d446d2fa7a15e0c9eb3f925a6dc0d616c7e9b7bdca1e",
-      "bytes": 732,
-      "source_sha256": "6da25cdc474b2a514607d446d2fa7a15e0c9eb3f925a6dc0d616c7e9b7bdca1e"
+    "mosei/README.md": {
+      "sha256": "3ae20a0fb173ef71c8a09e6e064d510ac50d05589bdb40bea3744f2ef692d46d",
+      "bytes": 653,
+      "source_files": {}
     },
-    "revisions/mosei_lr1e4_testf1_20260910/mse_router/__init__.py": {
-      "sha256": "e5a51cae990c2ef0a979c7009e57b2d2a90994d019fe6de5a9a86f2f0931f075",
-      "bytes": 482,
-      "source_sha256": "ad75675eae190322ca4f829c560064a42790083310c9848bf2e7eda017c39735",
-      "python_ast_matches_source": true
+    "mosei/launch_spec.json": {
+      "sha256": "b11e6776af705a41977e35280d980e305de332fd9a4054ea2f77ed216df58d6a",
+      "bytes": 424,
+      "source_files": {
+        "mosei_lr1e4_testf1_20260910/launch_spec.json": "6da25cdc474b2a514607d446d2fa7a15e0c9eb3f925a6dc0d616c7e9b7bdca1e"
+      }
     },
-    "revisions/mosei_lr1e4_testf1_20260910/mse_router/backbone_model.py": {
-      "sha256": "7c7bc4005a3587220eb517727e68c12075849b98babb666b7acb74cdf76189a4",
-      "bytes": 14638,
-      "source_sha256": "38357aae94a49d2689fb124277067c7ec42c0ce5bbc3d3213f24fd9f2e0977f9",
-      "python_ast_matches_source": true
+    "mosei/mse_router/__init__.py": {
+      "sha256": "10640f77ab4826c72c538d79669eae8b8d2aa49aff4a219d8e438b138d6ea519",
+      "bytes": 480,
+      "source_files": {
+        "mosei_lr1e4_testf1_20260910/mse_router/__init__.py": "ad75675eae190322ca4f829c560064a42790083310c9848bf2e7eda017c39735"
+      }
     },
-    "revisions/mosei_lr1e4_testf1_20260910/mse_router/data.py": {
+    "mosei/mse_router/data.py": {
       "sha256": "bec7e7028e751179a573d6f20b93266b223e1c5d296776f815fefa5f45e15f23",
       "bytes": 7755,
-      "source_sha256": "61d0b2a71acb5214a9cadd731266280514471a3f843173a1dcae49781e8b73ff",
-      "python_ast_matches_source": true
+      "source_files": {
+        "mosei_lr1e4_testf1_20260910/mse_router/data.py": "61d0b2a71acb5214a9cadd731266280514471a3f843173a1dcae49781e8b73ff"
+      }
     },
-    "revisions/mosei_lr1e4_testf1_20260910/mse_router/diagnostics.py": {
+    "mosei/mse_router/diagnostics.py": {
       "sha256": "89a5c4b9af97596fa7f22b9b462f71da66d5508f821fa786aacd71f3e010b0c3",
       "bytes": 2042,
-      "source_sha256": "d94e68e0fb9838b4d7332d07299629b6b4fa3c5e6ebac2942c61512398bc5a3b",
-      "python_ast_matches_source": true
+      "source_files": {
+        "mosei_lr1e4_testf1_20260910/mse_router/diagnostics.py": "d94e68e0fb9838b4d7332d07299629b6b4fa3c5e6ebac2942c61512398bc5a3b"
+      }
     },
-    "revisions/mosei_lr1e4_testf1_20260910/mse_router/math_utils.py": {
+    "mosei/mse_router/math_utils.py": {
       "sha256": "413e260ab3eddfe11b39e22a25c9bc448a8142e13d73033e65a3b9f84f765695",
       "bytes": 8010,
-      "source_sha256": "6626b2ace3928f9860c1603de194faf66cfcb603da482e2d30c57d5edd3282c2",
-      "python_ast_matches_source": true
+      "source_files": {
+        "mosei_lr1e4_testf1_20260910/mse_router/math_utils.py": "6626b2ace3928f9860c1603de194faf66cfcb603da482e2d30c57d5edd3282c2"
+      }
     },
-    "revisions/mosei_lr1e4_testf1_20260910/mse_router/model.py": {
-      "sha256": "cae9ae2c7176792a61bf26837cbbe8231a48f39e29342b7ae5bb9cb712b6c0a5",
-      "bytes": 36767,
-      "source_sha256": "3f5c406cb697aa746417d5478f13acc42c009e58f484f77b378e87e8fb970703",
-      "python_ast_matches_source": true
+    "mosei/mse_router/model.py": {
+      "sha256": "3ba4dd46462ed75aa84cd2101405480147a7de2d1fe1189b95f7a548f73b1a96",
+      "bytes": 38110,
+      "source_files": {
+        "mosei_lr1e4_testf1_20260910/mse_router/model.py": "3f5c406cb697aa746417d5478f13acc42c009e58f484f77b378e87e8fb970703",
+        "mosei_lr1e4_testf1_20260910/mse_router/backbone_model.py": "38357aae94a49d2689fb124277067c7ec42c0ce5bbc3d3213f24fd9f2e0977f9"
+      }
     },
-    "revisions/mosei_lr1e4_testf1_20260910/mse_router/sequence.py": {
-      "sha256": "d14573601f1a25b1c5d1022d42c2354fd07e94d94ab01f7bb0c3e389a59e09e0",
-      "bytes": 2058,
-      "source_sha256": "fa6232273b670d413408440ccfd5ea2ab5f0c7cae7cf7807a88d6730d45453b7",
-      "python_ast_matches_source": true
+    "mosei/mse_router/sequence.py": {
+      "sha256": "050492767bde06a0755d7848ede065e064c72118e5c49118b8286fa0785f407a",
+      "bytes": 1994,
+      "source_files": {
+        "mosei_lr1e4_testf1_20260910/mse_router/sequence.py": "fa6232273b670d413408440ccfd5ea2ab5f0c7cae7cf7807a88d6730d45453b7"
+      }
     },
-    "revisions/mosei_lr1e4_testf1_20260910/mse_router/trainer.py": {
-      "sha256": "437c5edf9ef793cdf6c471cf7abee81d75f08b36b82d5cd1fa250cff9e454248",
-      "bytes": 24047,
-      "source_sha256": "051265680f07e1be396ce9846f3b4e55a2485abc5d04fb7f60192602e10fb3bc",
-      "python_ast_matches_source": true
+    "mosei/mse_router/trainer.py": {
+      "sha256": "d93a2a926693d2b26f9e1e962e6de36b22b91d3e05e17421b2754e4a80159604",
+      "bytes": 19785,
+      "source_files": {
+        "mosei_lr1e4_testf1_20260910/mse_router/trainer.py": "051265680f07e1be396ce9846f3b4e55a2485abc5d04fb7f60192602e10fb3bc"
+      }
     },
-    "revisions/mosei_lr1e4_testf1_20260910/scripts/run_backbone_mosei_router.py": {
-      "sha256": "b53222bebb75c2eb1cd1ed39f1331403e9ecee73845f941df933ec31d979c448",
-      "bytes": 5992,
-      "source_sha256": "eb89756fe228e923a7e90ef5c03a63cd75271b401f27e81d6f5aad0a5e3195a5",
-      "python_ast_matches_source": true
+    "mosei/scripts/chatglm_setup.py": {
+      "sha256": "65f87c2ae270e7d4862c531fac828fab949b1886b9b5ef7094e1be452992bab0",
+      "bytes": 3096,
+      "source_files": {
+        "mosei_lr1e4_testf1_20260910/scripts/run_backbone_mosei_router.py": "eb89756fe228e923a7e90ef5c03a63cd75271b401f27e81d6f5aad0a5e3195a5"
+      }
     },
-    "revisions/mosei_lr1e4_testf1_20260910/scripts/run_chatglm3_mosei.py": {
-      "sha256": "023e90ef41c7c5e235b2afb6adf00fd56d81e91f17d046e7d12b5f3dea442a71",
-      "bytes": 1136,
-      "source_sha256": "2d7d04e762d8ea4a368f17fb1507ecf3a8ec16391a75ee3f0e00d6ed4f59182a",
-      "python_ast_matches_source": true
+    "mosei/scripts/experiment.py": {
+      "sha256": "e457bb374a061436a54b7567014f8ffcfc0400674705e24a2a641daf6bdbf24c",
+      "bytes": 24374,
+      "source_files": {
+        "mosei_lr1e4_testf1_20260910/scripts/run_qwen_mosei_router.py": "9e26e47be84bf5d0bac82302a79e3c7751ae623125b8899ec3cade180123a0c5"
+      }
     },
-    "revisions/mosei_lr1e4_testf1_20260910/scripts/run_qwen_mosei_router.py": {
-      "sha256": "3cef89c4941e6724c04cf5604e859f3316392e36799797b08de0143e036bda66",
-      "bytes": 25755,
-      "source_sha256": "9e26e47be84bf5d0bac82302a79e3c7751ae623125b8899ec3cade180123a0c5",
-      "python_ast_matches_source": true
+    "mosei/scripts/run_chatglm3_mosei.py": {
+      "sha256": "adeda3ded6c7e0aec2fdb200785db12e47f5bface517641761828ca7db638105",
+      "bytes": 1046,
+      "source_files": {
+        "mosei_lr1e4_testf1_20260910/scripts/run_chatglm3_mosei.py": "2d7d04e762d8ea4a368f17fb1507ecf3a8ec16391a75ee3f0e00d6ed4f59182a"
+      }
     },
-    "revisions/mosei_lr1e4_testf1_20260910/scripts/train_4090.slurm": {
-      "sha256": "5fe1e6c52392f99f1f8e73c23d8cafb70f274a920b2ae17d82b9602ed330f7cc",
-      "bytes": 2999,
-      "source_sha256": "51d548bec07f64d1ce4f233a63baeb4fed8d2cdc27d4dd91dd47d9734179769c",
-      "shell_commands_and_slurm_directives_match_source": true
+    "mosei/scripts/train.slurm": {
+      "sha256": "b36083fd6bf92888a4e0598b8024a5c0eb6f8464f7cf09a7ee1457420091aaf7",
+      "bytes": 2300,
+      "source_files": {}
     },
-    "revisions/mosei_lr1e4_testf1_20260910/source_hashes.json": {
-      "sha256": "416707235b64260d3449ee49e1563473ab6cecd3d00454969fa49f8f7d7e31a5",
-      "bytes": 1093,
-      "source_sha256": "416707235b64260d3449ee49e1563473ab6cecd3d00454969fa49f8f7d7e31a5"
+    "mosi/README.md": {
+      "sha256": "66b5597bde0327c5b73cd021b1aed88fe4af6707be184a69c1af6f6505338eb4",
+      "bytes": 649,
+      "source_files": {
+        "mosi_testf1_full40_20260909/README.md": "a49220c0bab281c1ce87b43011f95d0451fd28a26d224d6038aeed0a6abbd558"
+      }
     },
-    "revisions/mosei_lr1e4_testf1_20260910/validation.json": {
-      "sha256": "de3319e0d580c98ba9c8e08bd947f07c197d9f02ab6663840862d73f061707c1",
-      "bytes": 4389,
-      "source_sha256": "de3319e0d580c98ba9c8e08bd947f07c197d9f02ab6663840862d73f061707c1"
+    "mosi/launch_spec.json": {
+      "sha256": "03ac07ee1e6f4c8227380149a46e97fa4f6209a73d3cbcc7ba8e8649b7daaeb6",
+      "bytes": 421,
+      "source_files": {
+        "mosi_testf1_full40_20260909/launch_spec.json": "83d369d20c5a1be82e2b69551bb5c9dd83107ef8ee111fd4eae96ebf11deeae1"
+      }
     },
-    "revisions/mosei_lr5e3_head1e3_testf1_20260910/launch_spec.json": {
-      "sha256": "ea740ab5aa6d4f449251b9c2341a001427fa8ad2d827bef919b095b263302c77",
-      "bytes": 738,
-      "source_sha256": "ea740ab5aa6d4f449251b9c2341a001427fa8ad2d827bef919b095b263302c77"
+    "mosi/mse_router/__init__.py": {
+      "sha256": "10640f77ab4826c72c538d79669eae8b8d2aa49aff4a219d8e438b138d6ea519",
+      "bytes": 480,
+      "source_files": {
+        "mosi_testf1_full40_20260909/mse_router/__init__.py": "ad75675eae190322ca4f829c560064a42790083310c9848bf2e7eda017c39735"
+      }
     },
-    "revisions/mosei_lr5e3_head1e3_testf1_20260910/mse_router/__init__.py": {
-      "sha256": "e5a51cae990c2ef0a979c7009e57b2d2a90994d019fe6de5a9a86f2f0931f075",
-      "bytes": 482,
-      "source_sha256": "ad75675eae190322ca4f829c560064a42790083310c9848bf2e7eda017c39735",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosei_lr5e3_head1e3_testf1_20260910/mse_router/backbone_model.py": {
-      "sha256": "7c7bc4005a3587220eb517727e68c12075849b98babb666b7acb74cdf76189a4",
-      "bytes": 14638,
-      "source_sha256": "38357aae94a49d2689fb124277067c7ec42c0ce5bbc3d3213f24fd9f2e0977f9",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosei_lr5e3_head1e3_testf1_20260910/mse_router/data.py": {
+    "mosi/mse_router/data.py": {
       "sha256": "bec7e7028e751179a573d6f20b93266b223e1c5d296776f815fefa5f45e15f23",
       "bytes": 7755,
-      "source_sha256": "61d0b2a71acb5214a9cadd731266280514471a3f843173a1dcae49781e8b73ff",
-      "python_ast_matches_source": true
+      "source_files": {
+        "mosi_testf1_full40_20260909/mse_router/data.py": "61d0b2a71acb5214a9cadd731266280514471a3f843173a1dcae49781e8b73ff"
+      }
     },
-    "revisions/mosei_lr5e3_head1e3_testf1_20260910/mse_router/diagnostics.py": {
+    "mosi/mse_router/diagnostics.py": {
       "sha256": "89a5c4b9af97596fa7f22b9b462f71da66d5508f821fa786aacd71f3e010b0c3",
       "bytes": 2042,
-      "source_sha256": "d94e68e0fb9838b4d7332d07299629b6b4fa3c5e6ebac2942c61512398bc5a3b",
-      "python_ast_matches_source": true
+      "source_files": {
+        "mosi_testf1_full40_20260909/mse_router/diagnostics.py": "d94e68e0fb9838b4d7332d07299629b6b4fa3c5e6ebac2942c61512398bc5a3b"
+      }
     },
-    "revisions/mosei_lr5e3_head1e3_testf1_20260910/mse_router/math_utils.py": {
+    "mosi/mse_router/math_utils.py": {
       "sha256": "413e260ab3eddfe11b39e22a25c9bc448a8142e13d73033e65a3b9f84f765695",
       "bytes": 8010,
-      "source_sha256": "6626b2ace3928f9860c1603de194faf66cfcb603da482e2d30c57d5edd3282c2",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosei_lr5e3_head1e3_testf1_20260910/mse_router/model.py": {
-      "sha256": "cae9ae2c7176792a61bf26837cbbe8231a48f39e29342b7ae5bb9cb712b6c0a5",
-      "bytes": 36767,
-      "source_sha256": "3f5c406cb697aa746417d5478f13acc42c009e58f484f77b378e87e8fb970703",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosei_lr5e3_head1e3_testf1_20260910/mse_router/sequence.py": {
-      "sha256": "d14573601f1a25b1c5d1022d42c2354fd07e94d94ab01f7bb0c3e389a59e09e0",
-      "bytes": 2058,
-      "source_sha256": "fa6232273b670d413408440ccfd5ea2ab5f0c7cae7cf7807a88d6730d45453b7",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosei_lr5e3_head1e3_testf1_20260910/mse_router/trainer.py": {
-      "sha256": "437c5edf9ef793cdf6c471cf7abee81d75f08b36b82d5cd1fa250cff9e454248",
-      "bytes": 24047,
-      "source_sha256": "051265680f07e1be396ce9846f3b4e55a2485abc5d04fb7f60192602e10fb3bc",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosei_lr5e3_head1e3_testf1_20260910/scripts/run_backbone_mosei_router.py": {
-      "sha256": "b53222bebb75c2eb1cd1ed39f1331403e9ecee73845f941df933ec31d979c448",
-      "bytes": 5992,
-      "source_sha256": "eb89756fe228e923a7e90ef5c03a63cd75271b401f27e81d6f5aad0a5e3195a5",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosei_lr5e3_head1e3_testf1_20260910/scripts/run_chatglm3_mosei.py": {
-      "sha256": "020052414ac90239bf6cc6a33855a488812ec5ea35d6aae6d61f811fa526f0db",
-      "bytes": 1142,
-      "source_sha256": "445304af4308530a43a479eea7fd07dabad03e360816d0a9b453796471538539",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosei_lr5e3_head1e3_testf1_20260910/scripts/run_qwen_mosei_router.py": {
-      "sha256": "3cef89c4941e6724c04cf5604e859f3316392e36799797b08de0143e036bda66",
-      "bytes": 25755,
-      "source_sha256": "9e26e47be84bf5d0bac82302a79e3c7751ae623125b8899ec3cade180123a0c5",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosei_lr5e3_head1e3_testf1_20260910/scripts/train_4090.slurm": {
-      "sha256": "7358e1e8725b89aba47a4715049b9e1e225791dcbafc2f2521bf2e41e5e1459b",
-      "bytes": 3039,
-      "source_sha256": "3baae6fa6957a9fe5a542d0c41e5ecd1078f5966c7813e2cf3b76a3b256124c1",
-      "shell_commands_and_slurm_directives_match_source": true
-    },
-    "revisions/mosei_lr5e3_head1e3_testf1_20260910/scripts/train_a800.slurm": {
-      "sha256": "a3ebfeca3a5ab9aec5ab97960c2854acc0185b3235cd785c66f09f5e13918225",
-      "bytes": 3036,
-      "source_sha256": "9868343d9ca17cf45724781fde2c4564e6f2930a663bfe4668e06c401a412c7d",
-      "shell_commands_and_slurm_directives_match_source": true
-    },
-    "revisions/mosei_lr5e3_head1e3_testf1_20260910/source_hashes.json": {
-      "sha256": "60e35e001997cde63150073871ce902f49ba3e8ee6a5b0f5940b85a7e5feed08",
-      "bytes": 1093,
-      "source_sha256": "60e35e001997cde63150073871ce902f49ba3e8ee6a5b0f5940b85a7e5feed08"
-    },
-    "revisions/mosei_lr5e3_head1e3_testf1_20260910/validation.json": {
-      "sha256": "d31e15f65f4f445dc0f89ff0344de30c07bf3ff6a69207073c184be9d985d582",
-      "bytes": 4395,
-      "source_sha256": "d31e15f65f4f445dc0f89ff0344de30c07bf3ff6a69207073c184be9d985d582"
-    },
-    "revisions/mosi_backbone_lr1e3_d01_20260912/README.md": {
-      "sha256": "af8aae93bfc22b1b8a901cd98a7fe212c4a35d7dfa86a01765bf81f6beec28fa",
-      "bytes": 507,
-      "source_sha256": "af8aae93bfc22b1b8a901cd98a7fe212c4a35d7dfa86a01765bf81f6beec28fa"
-    },
-    "revisions/mosi_backbone_lr1e3_d01_20260912/baseline_verification.json": {
-      "sha256": "08e8ffb432048ee48b76f14a2a204951096ed104cedc4d61fe46f08450a49838",
-      "bytes": 2638,
-      "source_sha256": "08e8ffb432048ee48b76f14a2a204951096ed104cedc4d61fe46f08450a49838"
-    },
-    "revisions/mosi_backbone_lr1e3_d01_20260912/launch_spec.json": {
-      "sha256": "ec0b0686088ca377969868f2bdae52eb6f983bf1e7ed4d0983f8f459eb469569",
-      "bytes": 830,
-      "source_sha256": "ec0b0686088ca377969868f2bdae52eb6f983bf1e7ed4d0983f8f459eb469569"
-    },
-    "revisions/mosi_backbone_lr1e3_d01_20260912/llama2_cpu_validation.json": {
-      "sha256": "5c51f89f18cdcecb082f6a70a0bb1fcb12df0e7d68ef5f1b4022f3ea7c413212",
-      "bytes": 2604,
-      "source_sha256": "5c51f89f18cdcecb082f6a70a0bb1fcb12df0e7d68ef5f1b4022f3ea7c413212"
-    },
-    "revisions/mosi_backbone_lr1e3_d01_20260912/mse_router/__init__.py": {
-      "sha256": "e5a51cae990c2ef0a979c7009e57b2d2a90994d019fe6de5a9a86f2f0931f075",
-      "bytes": 482,
-      "source_sha256": "ad75675eae190322ca4f829c560064a42790083310c9848bf2e7eda017c39735",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_backbone_lr1e3_d01_20260912/mse_router/backbone_model.py": {
-      "sha256": "7c7bc4005a3587220eb517727e68c12075849b98babb666b7acb74cdf76189a4",
-      "bytes": 14638,
-      "source_sha256": "38357aae94a49d2689fb124277067c7ec42c0ce5bbc3d3213f24fd9f2e0977f9",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_backbone_lr1e3_d01_20260912/mse_router/data.py": {
-      "sha256": "bec7e7028e751179a573d6f20b93266b223e1c5d296776f815fefa5f45e15f23",
-      "bytes": 7755,
-      "source_sha256": "61d0b2a71acb5214a9cadd731266280514471a3f843173a1dcae49781e8b73ff",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_backbone_lr1e3_d01_20260912/mse_router/diagnostics.py": {
-      "sha256": "89a5c4b9af97596fa7f22b9b462f71da66d5508f821fa786aacd71f3e010b0c3",
-      "bytes": 2042,
-      "source_sha256": "d94e68e0fb9838b4d7332d07299629b6b4fa3c5e6ebac2942c61512398bc5a3b",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_backbone_lr1e3_d01_20260912/mse_router/math_utils.py": {
-      "sha256": "413e260ab3eddfe11b39e22a25c9bc448a8142e13d73033e65a3b9f84f765695",
-      "bytes": 8010,
-      "source_sha256": "6626b2ace3928f9860c1603de194faf66cfcb603da482e2d30c57d5edd3282c2",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_backbone_lr1e3_d01_20260912/mse_router/model.py": {
-      "sha256": "cae9ae2c7176792a61bf26837cbbe8231a48f39e29342b7ae5bb9cb712b6c0a5",
-      "bytes": 36767,
-      "source_sha256": "3f5c406cb697aa746417d5478f13acc42c009e58f484f77b378e87e8fb970703",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_backbone_lr1e3_d01_20260912/mse_router/sequence.py": {
-      "sha256": "d14573601f1a25b1c5d1022d42c2354fd07e94d94ab01f7bb0c3e389a59e09e0",
-      "bytes": 2058,
-      "source_sha256": "fa6232273b670d413408440ccfd5ea2ab5f0c7cae7cf7807a88d6730d45453b7",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_backbone_lr1e3_d01_20260912/mse_router/trainer.py": {
-      "sha256": "437c5edf9ef793cdf6c471cf7abee81d75f08b36b82d5cd1fa250cff9e454248",
-      "bytes": 24047,
-      "source_sha256": "051265680f07e1be396ce9846f3b4e55a2485abc5d04fb7f60192602e10fb3bc",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_backbone_lr1e3_d01_20260912/qwen18_cpu_validation.json": {
-      "sha256": "ef84bc14c6141062554a6ab16b99373103dffbaded385c4f4b741d3e4aec583a",
-      "bytes": 2155,
-      "source_sha256": "ef84bc14c6141062554a6ab16b99373103dffbaded385c4f4b741d3e4aec583a"
-    },
-    "revisions/mosi_backbone_lr1e3_d01_20260912/scripts/run_backbone_mosei_router.py": {
-      "sha256": "b53222bebb75c2eb1cd1ed39f1331403e9ecee73845f941df933ec31d979c448",
-      "bytes": 5992,
-      "source_sha256": "eb89756fe228e923a7e90ef5c03a63cd75271b401f27e81d6f5aad0a5e3195a5",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_backbone_lr1e3_d01_20260912/scripts/run_chatglm3_mosi.py": {
-      "sha256": "08f4e838f984987143d85cb09cb9785e2449ff2ea599598a3e5c95a19f4a76fe",
-      "bytes": 2131,
-      "source_sha256": "6d843ca384ed58b4dc3ed6c09bff314e69c7807568bace93dbeacd58058035ef",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_backbone_lr1e3_d01_20260912/scripts/run_chatglm3_mosi_extra_seeds.py": {
-      "sha256": "1ccb882048d0a7ca20df0f093350ec67c826f2a49838154f78d66d7eeef1cee9",
-      "bytes": 454,
-      "source_sha256": "5fe278e1ce783eb523262b9efcc2a7eb3e5ae54f7a2eac6623e3187e93dec460",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_backbone_lr1e3_d01_20260912/scripts/run_chatglm3_mosi_seed1115.py": {
-      "sha256": "2102f0cd1848014fb2c834a92e63f8ea495f43ed7bba25d9e64d9ff31e1e8e85",
-      "bytes": 449,
-      "source_sha256": "c5967722c13ae94962f5c081821dd1516dbaeb6955778252256aad6f64ba89ad",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_backbone_lr1e3_d01_20260912/scripts/run_qwen_mosei_router.py": {
-      "sha256": "3cef89c4941e6724c04cf5604e859f3316392e36799797b08de0143e036bda66",
-      "bytes": 25755,
-      "source_sha256": "9e26e47be84bf5d0bac82302a79e3c7751ae623125b8899ec3cade180123a0c5",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_backbone_lr1e3_d01_20260912/scripts/run_transfer_mosi.py": {
-      "sha256": "f75eaf384d27ef4b0132c76840f84cd764b4361145b7c63af4b96aeabfd0ed72",
-      "bytes": 5946,
-      "source_sha256": "68d12c8f6daead6c2e18f0629751a789f7a2f244e3eb1a9f653b38f0029633af",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_backbone_lr1e3_d01_20260912/scripts/train_llama2.slurm": {
-      "sha256": "ec3833db01ce81f5b4eb5957b72ef2d32026886500219d3527d5fed3588b5d63",
-      "bytes": 3055,
-      "source_sha256": "9237efe9ef744ad4800d23dc072edcc632b3d0820814b91201f00d8971189027",
-      "shell_commands_and_slurm_directives_match_source": true
-    },
-    "revisions/mosi_backbone_lr1e3_d01_20260912/scripts/train_qwen18.slurm": {
-      "sha256": "1821e66fd7a5f35ef34257ca757bf71b808a759276597e9f0b406f285393bea1",
-      "bytes": 3055,
-      "source_sha256": "f26654902454244febc7534d25ab6381cfa6967e8e38767665f97d9f0b2732c7",
-      "shell_commands_and_slurm_directives_match_source": true
-    },
-    "revisions/mosi_backbone_lr1e3_d01_20260912/scripts/train_qwen25.slurm": {
-      "sha256": "af2217c31bf068c5d555909b599bca2b016a68d261fc4c93b4e91e2b8e608cf0",
-      "bytes": 3047,
-      "source_sha256": "b583c4d90d32cf27b7883ca64f510068ecba457c004d1ac23aa3d7f88667e47e",
-      "shell_commands_and_slurm_directives_match_source": true
-    },
-    "revisions/mosi_llama32_lr1e3_d01_20260912/README.md": {
-      "sha256": "af8aae93bfc22b1b8a901cd98a7fe212c4a35d7dfa86a01765bf81f6beec28fa",
-      "bytes": 507,
-      "source_sha256": "af8aae93bfc22b1b8a901cd98a7fe212c4a35d7dfa86a01765bf81f6beec28fa"
-    },
-    "revisions/mosi_llama32_lr1e3_d01_20260912/baseline_verification.json": {
-      "sha256": "08e8ffb432048ee48b76f14a2a204951096ed104cedc4d61fe46f08450a49838",
-      "bytes": 2638,
-      "source_sha256": "08e8ffb432048ee48b76f14a2a204951096ed104cedc4d61fe46f08450a49838"
-    },
-    "revisions/mosi_llama32_lr1e3_d01_20260912/launch_spec.json": {
-      "sha256": "ec0b0686088ca377969868f2bdae52eb6f983bf1e7ed4d0983f8f459eb469569",
-      "bytes": 830,
-      "source_sha256": "ec0b0686088ca377969868f2bdae52eb6f983bf1e7ed4d0983f8f459eb469569"
-    },
-    "revisions/mosi_llama32_lr1e3_d01_20260912/llama32_cpu_validation.json": {
-      "sha256": "886f10c280d028a8fd9527909b5ff912960e7893fabdfe96b50aff6de612b717",
-      "bytes": 2340,
-      "source_sha256": "886f10c280d028a8fd9527909b5ff912960e7893fabdfe96b50aff6de612b717"
-    },
-    "revisions/mosi_llama32_lr1e3_d01_20260912/mse_router/__init__.py": {
-      "sha256": "e5a51cae990c2ef0a979c7009e57b2d2a90994d019fe6de5a9a86f2f0931f075",
-      "bytes": 482,
-      "source_sha256": "ad75675eae190322ca4f829c560064a42790083310c9848bf2e7eda017c39735",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_llama32_lr1e3_d01_20260912/mse_router/backbone_model.py": {
-      "sha256": "ed2b7d9b5b3dfcf1c29624e03605e515a4b714e26b44cc42815ff92b28563070",
-      "bytes": 14683,
-      "source_sha256": "25be38de811d057166ddc0146fe3ad550349929db7c4088df18a3fd628866638",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_llama32_lr1e3_d01_20260912/mse_router/data.py": {
-      "sha256": "bec7e7028e751179a573d6f20b93266b223e1c5d296776f815fefa5f45e15f23",
-      "bytes": 7755,
-      "source_sha256": "61d0b2a71acb5214a9cadd731266280514471a3f843173a1dcae49781e8b73ff",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_llama32_lr1e3_d01_20260912/mse_router/diagnostics.py": {
-      "sha256": "89a5c4b9af97596fa7f22b9b462f71da66d5508f821fa786aacd71f3e010b0c3",
-      "bytes": 2042,
-      "source_sha256": "d94e68e0fb9838b4d7332d07299629b6b4fa3c5e6ebac2942c61512398bc5a3b",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_llama32_lr1e3_d01_20260912/mse_router/math_utils.py": {
-      "sha256": "413e260ab3eddfe11b39e22a25c9bc448a8142e13d73033e65a3b9f84f765695",
-      "bytes": 8010,
-      "source_sha256": "6626b2ace3928f9860c1603de194faf66cfcb603da482e2d30c57d5edd3282c2",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_llama32_lr1e3_d01_20260912/mse_router/model.py": {
-      "sha256": "cae9ae2c7176792a61bf26837cbbe8231a48f39e29342b7ae5bb9cb712b6c0a5",
-      "bytes": 36767,
-      "source_sha256": "3f5c406cb697aa746417d5478f13acc42c009e58f484f77b378e87e8fb970703",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_llama32_lr1e3_d01_20260912/mse_router/sequence.py": {
-      "sha256": "d14573601f1a25b1c5d1022d42c2354fd07e94d94ab01f7bb0c3e389a59e09e0",
-      "bytes": 2058,
-      "source_sha256": "fa6232273b670d413408440ccfd5ea2ab5f0c7cae7cf7807a88d6730d45453b7",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_llama32_lr1e3_d01_20260912/mse_router/trainer.py": {
-      "sha256": "437c5edf9ef793cdf6c471cf7abee81d75f08b36b82d5cd1fa250cff9e454248",
-      "bytes": 24047,
-      "source_sha256": "051265680f07e1be396ce9846f3b4e55a2485abc5d04fb7f60192602e10fb3bc",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_llama32_lr1e3_d01_20260912/requirements-modern.txt": {
-      "sha256": "15ff26f7485a940d5a39429fd860917f11deb5a0d5501e47bd74b26a57b9f73a",
-      "bytes": 125,
-      "source_sha256": "9643f2e65ea31dd75b5483f34118a45bcb52785772013f2e974759001121524b"
-    },
-    "revisions/mosi_llama32_lr1e3_d01_20260912/scripts/run_backbone_mosei_router.py": {
-      "sha256": "b53222bebb75c2eb1cd1ed39f1331403e9ecee73845f941df933ec31d979c448",
-      "bytes": 5992,
-      "source_sha256": "eb89756fe228e923a7e90ef5c03a63cd75271b401f27e81d6f5aad0a5e3195a5",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_llama32_lr1e3_d01_20260912/scripts/run_chatglm3_mosi.py": {
-      "sha256": "08f4e838f984987143d85cb09cb9785e2449ff2ea599598a3e5c95a19f4a76fe",
-      "bytes": 2131,
-      "source_sha256": "6d843ca384ed58b4dc3ed6c09bff314e69c7807568bace93dbeacd58058035ef",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_llama32_lr1e3_d01_20260912/scripts/run_chatglm3_mosi_extra_seeds.py": {
-      "sha256": "1ccb882048d0a7ca20df0f093350ec67c826f2a49838154f78d66d7eeef1cee9",
-      "bytes": 454,
-      "source_sha256": "5fe278e1ce783eb523262b9efcc2a7eb3e5ae54f7a2eac6623e3187e93dec460",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_llama32_lr1e3_d01_20260912/scripts/run_chatglm3_mosi_seed1115.py": {
-      "sha256": "2102f0cd1848014fb2c834a92e63f8ea495f43ed7bba25d9e64d9ff31e1e8e85",
-      "bytes": 449,
-      "source_sha256": "c5967722c13ae94962f5c081821dd1516dbaeb6955778252256aad6f64ba89ad",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_llama32_lr1e3_d01_20260912/scripts/run_qwen_mosei_router.py": {
-      "sha256": "3cef89c4941e6724c04cf5604e859f3316392e36799797b08de0143e036bda66",
-      "bytes": 25755,
-      "source_sha256": "9e26e47be84bf5d0bac82302a79e3c7751ae623125b8899ec3cade180123a0c5",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_llama32_lr1e3_d01_20260912/scripts/run_transfer_mosi.py": {
-      "sha256": "70cf1d18d433e05d0621722523eb502f6299a8b544cd27119b7c5aa7938ba3cc",
-      "bytes": 6034,
-      "source_sha256": "2d12fb80cfdc63a44a3af52afa9d3edaf2546655b1c9496b0afdb549e33a0037",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_llama32_lr1e3_d01_20260912/scripts/train_llama32.slurm": {
-      "sha256": "7ee7a844ca5479122944c258387fcc8d2ea9660116529ce2e0c1dc6cbd48c45a",
-      "bytes": 3062,
-      "source_sha256": "d6b5afd9182f85eb13e921275b447449e94e679d43e9aa7641e6f3bd895da364",
-      "shell_commands_and_slurm_directives_match_source": true
-    },
-    "revisions/mosi_lr1e3_d00_three_seeds_20260910/README.md": {
-      "sha256": "05d832cd687f8bdd1e1489921cd29355fb8040389693aed6ab40f477d6cf1630",
-      "bytes": 221,
-      "source_sha256": "05d832cd687f8bdd1e1489921cd29355fb8040389693aed6ab40f477d6cf1630"
-    },
-    "revisions/mosi_lr1e3_d00_three_seeds_20260910/launch_spec.json": {
-      "sha256": "dedd319a020e37a09210cc85740c78c699f5a362c27f8173782141ee421aecf5",
-      "bytes": 804,
-      "source_sha256": "dedd319a020e37a09210cc85740c78c699f5a362c27f8173782141ee421aecf5"
-    },
-    "revisions/mosi_lr1e3_d00_three_seeds_20260910/mse_router/__init__.py": {
-      "sha256": "e5a51cae990c2ef0a979c7009e57b2d2a90994d019fe6de5a9a86f2f0931f075",
-      "bytes": 482,
-      "source_sha256": "ad75675eae190322ca4f829c560064a42790083310c9848bf2e7eda017c39735",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_lr1e3_d00_three_seeds_20260910/mse_router/backbone_model.py": {
-      "sha256": "06668b61fef688d0c476d4e4961d8913248f2a8f6c5939569ad2b10083485b70",
-      "bytes": 14638,
-      "source_sha256": "9a723a606798675b433cc1a9e6c3e27e1da873b7e5ce879ae3c5636afd4cf57e",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_lr1e3_d00_three_seeds_20260910/mse_router/data.py": {
-      "sha256": "bec7e7028e751179a573d6f20b93266b223e1c5d296776f815fefa5f45e15f23",
-      "bytes": 7755,
-      "source_sha256": "61d0b2a71acb5214a9cadd731266280514471a3f843173a1dcae49781e8b73ff",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_lr1e3_d00_three_seeds_20260910/mse_router/diagnostics.py": {
-      "sha256": "89a5c4b9af97596fa7f22b9b462f71da66d5508f821fa786aacd71f3e010b0c3",
-      "bytes": 2042,
-      "source_sha256": "d94e68e0fb9838b4d7332d07299629b6b4fa3c5e6ebac2942c61512398bc5a3b",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_lr1e3_d00_three_seeds_20260910/mse_router/math_utils.py": {
-      "sha256": "413e260ab3eddfe11b39e22a25c9bc448a8142e13d73033e65a3b9f84f765695",
-      "bytes": 8010,
-      "source_sha256": "6626b2ace3928f9860c1603de194faf66cfcb603da482e2d30c57d5edd3282c2",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_lr1e3_d00_three_seeds_20260910/mse_router/model.py": {
-      "sha256": "c6c65dfe29bcf45fdc055f9f6dcd99eb11d57d5f553341185a8d804b03adc796",
-      "bytes": 36767,
-      "source_sha256": "667171e3421935c2e48c0876ff5c9a5922fe085947716865fceea4173a341956",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_lr1e3_d00_three_seeds_20260910/mse_router/sequence.py": {
-      "sha256": "d14573601f1a25b1c5d1022d42c2354fd07e94d94ab01f7bb0c3e389a59e09e0",
-      "bytes": 2058,
-      "source_sha256": "fa6232273b670d413408440ccfd5ea2ab5f0c7cae7cf7807a88d6730d45453b7",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_lr1e3_d00_three_seeds_20260910/mse_router/trainer.py": {
-      "sha256": "437c5edf9ef793cdf6c471cf7abee81d75f08b36b82d5cd1fa250cff9e454248",
-      "bytes": 24047,
-      "source_sha256": "051265680f07e1be396ce9846f3b4e55a2485abc5d04fb7f60192602e10fb3bc",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_lr1e3_d00_three_seeds_20260910/scripts/run_backbone_mosei_router.py": {
-      "sha256": "b53222bebb75c2eb1cd1ed39f1331403e9ecee73845f941df933ec31d979c448",
-      "bytes": 5992,
-      "source_sha256": "eb89756fe228e923a7e90ef5c03a63cd75271b401f27e81d6f5aad0a5e3195a5",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_lr1e3_d00_three_seeds_20260910/scripts/run_chatglm3_mosi.py": {
-      "sha256": "fe0cfe8bbf342f3c1627c1529b94b330b54971c409d0651a58305138cf51a15d",
-      "bytes": 2125,
-      "source_sha256": "ce924eed52618db57a6af7de76466493ddd12061795f89644b11d6adde056b4f",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_lr1e3_d00_three_seeds_20260910/scripts/run_chatglm3_mosi_extra_seeds.py": {
-      "sha256": "1ccb882048d0a7ca20df0f093350ec67c826f2a49838154f78d66d7eeef1cee9",
-      "bytes": 454,
-      "source_sha256": "5fe278e1ce783eb523262b9efcc2a7eb3e5ae54f7a2eac6623e3187e93dec460",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_lr1e3_d00_three_seeds_20260910/scripts/run_chatglm3_mosi_seed1115.py": {
-      "sha256": "2102f0cd1848014fb2c834a92e63f8ea495f43ed7bba25d9e64d9ff31e1e8e85",
-      "bytes": 449,
-      "source_sha256": "c5967722c13ae94962f5c081821dd1516dbaeb6955778252256aad6f64ba89ad",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_lr1e3_d00_three_seeds_20260910/scripts/run_qwen_mosei_router.py": {
-      "sha256": "3cef89c4941e6724c04cf5604e859f3316392e36799797b08de0143e036bda66",
-      "bytes": 25755,
-      "source_sha256": "9e26e47be84bf5d0bac82302a79e3c7751ae623125b8899ec3cade180123a0c5",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_lr1e3_d00_three_seeds_20260910/scripts/train_testf1max_full40.slurm": {
-      "sha256": "4de55e9a3f4a25cb23ad83de1bb6c8ecd3b7665fd67201c18ec17eba33b1215c",
-      "bytes": 3031,
-      "source_sha256": "02e83aae3f864a2848f466ff88a9db9978a54085dce48de828dac7ff21056757",
-      "shell_commands_and_slurm_directives_match_source": true
-    },
-    "revisions/mosi_lr1e3_d00_three_seeds_20260910/validation.json": {
-      "sha256": "2842bb25b6151eecc399d1ff39a1d805edcad60e716439d4d3b5a6c795f3967c",
-      "bytes": 410,
-      "source_sha256": "2842bb25b6151eecc399d1ff39a1d805edcad60e716439d4d3b5a6c795f3967c"
-    },
-    "revisions/mosi_lr1e4_testf1_full40_20260910/README.md": {
-      "sha256": "8a3aba101c12c00dab425771192a0d32ad7b006dde42d6fe1b2bb844f16df6f1",
-      "bytes": 266,
-      "source_sha256": "8a3aba101c12c00dab425771192a0d32ad7b006dde42d6fe1b2bb844f16df6f1"
-    },
-    "revisions/mosi_lr1e4_testf1_full40_20260910/launch_spec.json": {
-      "sha256": "060ec1a86f0c7b2706ed94c8cf105137611515d34b76efab733c68f570fb2534",
-      "bytes": 825,
-      "source_sha256": "060ec1a86f0c7b2706ed94c8cf105137611515d34b76efab733c68f570fb2534"
-    },
-    "revisions/mosi_lr1e4_testf1_full40_20260910/mse_router/__init__.py": {
-      "sha256": "e5a51cae990c2ef0a979c7009e57b2d2a90994d019fe6de5a9a86f2f0931f075",
-      "bytes": 482,
-      "source_sha256": "ad75675eae190322ca4f829c560064a42790083310c9848bf2e7eda017c39735",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_lr1e4_testf1_full40_20260910/mse_router/backbone_model.py": {
-      "sha256": "7c7bc4005a3587220eb517727e68c12075849b98babb666b7acb74cdf76189a4",
-      "bytes": 14638,
-      "source_sha256": "38357aae94a49d2689fb124277067c7ec42c0ce5bbc3d3213f24fd9f2e0977f9",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_lr1e4_testf1_full40_20260910/mse_router/data.py": {
-      "sha256": "bec7e7028e751179a573d6f20b93266b223e1c5d296776f815fefa5f45e15f23",
-      "bytes": 7755,
-      "source_sha256": "61d0b2a71acb5214a9cadd731266280514471a3f843173a1dcae49781e8b73ff",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_lr1e4_testf1_full40_20260910/mse_router/diagnostics.py": {
-      "sha256": "89a5c4b9af97596fa7f22b9b462f71da66d5508f821fa786aacd71f3e010b0c3",
-      "bytes": 2042,
-      "source_sha256": "d94e68e0fb9838b4d7332d07299629b6b4fa3c5e6ebac2942c61512398bc5a3b",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_lr1e4_testf1_full40_20260910/mse_router/math_utils.py": {
-      "sha256": "413e260ab3eddfe11b39e22a25c9bc448a8142e13d73033e65a3b9f84f765695",
-      "bytes": 8010,
-      "source_sha256": "6626b2ace3928f9860c1603de194faf66cfcb603da482e2d30c57d5edd3282c2",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_lr1e4_testf1_full40_20260910/mse_router/model.py": {
-      "sha256": "cae9ae2c7176792a61bf26837cbbe8231a48f39e29342b7ae5bb9cb712b6c0a5",
-      "bytes": 36767,
-      "source_sha256": "3f5c406cb697aa746417d5478f13acc42c009e58f484f77b378e87e8fb970703",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_lr1e4_testf1_full40_20260910/mse_router/sequence.py": {
-      "sha256": "d14573601f1a25b1c5d1022d42c2354fd07e94d94ab01f7bb0c3e389a59e09e0",
-      "bytes": 2058,
-      "source_sha256": "fa6232273b670d413408440ccfd5ea2ab5f0c7cae7cf7807a88d6730d45453b7",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_lr1e4_testf1_full40_20260910/mse_router/trainer.py": {
-      "sha256": "437c5edf9ef793cdf6c471cf7abee81d75f08b36b82d5cd1fa250cff9e454248",
-      "bytes": 24047,
-      "source_sha256": "051265680f07e1be396ce9846f3b4e55a2485abc5d04fb7f60192602e10fb3bc",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_lr1e4_testf1_full40_20260910/scripts/run_backbone_mosei_router.py": {
-      "sha256": "b53222bebb75c2eb1cd1ed39f1331403e9ecee73845f941df933ec31d979c448",
-      "bytes": 5992,
-      "source_sha256": "eb89756fe228e923a7e90ef5c03a63cd75271b401f27e81d6f5aad0a5e3195a5",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_lr1e4_testf1_full40_20260910/scripts/run_chatglm3_mosi.py": {
-      "sha256": "062828f9907aa0bb2a46548643d5f12a1612db6cce5d498d77eafadac2510de3",
-      "bytes": 2131,
-      "source_sha256": "c74f5b7d7967d9d8a22017e6af6df34f62037dd9a466bffebcc3e45ccd48cc48",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_lr1e4_testf1_full40_20260910/scripts/run_chatglm3_mosi_extra_seeds.py": {
-      "sha256": "1ccb882048d0a7ca20df0f093350ec67c826f2a49838154f78d66d7eeef1cee9",
-      "bytes": 454,
-      "source_sha256": "5fe278e1ce783eb523262b9efcc2a7eb3e5ae54f7a2eac6623e3187e93dec460",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_lr1e4_testf1_full40_20260910/scripts/run_chatglm3_mosi_seed1115.py": {
-      "sha256": "2102f0cd1848014fb2c834a92e63f8ea495f43ed7bba25d9e64d9ff31e1e8e85",
-      "bytes": 449,
-      "source_sha256": "c5967722c13ae94962f5c081821dd1516dbaeb6955778252256aad6f64ba89ad",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_lr1e4_testf1_full40_20260910/scripts/run_qwen_mosei_router.py": {
-      "sha256": "3cef89c4941e6724c04cf5604e859f3316392e36799797b08de0143e036bda66",
-      "bytes": 25755,
-      "source_sha256": "9e26e47be84bf5d0bac82302a79e3c7751ae623125b8899ec3cade180123a0c5",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_lr1e4_testf1_full40_20260910/scripts/train_testf1max_full40.slurm": {
-      "sha256": "a71e1f8e2274a45454736729e4a84c98953912176ad316ba59166e5befe10264",
-      "bytes": 3057,
-      "source_sha256": "a4462523ebead972f7ecef60334e79865a54387ada2c42a0d64751c18e748fa3",
-      "shell_commands_and_slurm_directives_match_source": true
-    },
-    "revisions/mosi_lr1e4_testf1_full40_20260910/validation.json": {
-      "sha256": "4d10c83affcd6c3557a5204bdfc9d54dbe15fe69ed5897b267eb53d486f521c2",
-      "bytes": 584,
-      "source_sha256": "4d10c83affcd6c3557a5204bdfc9d54dbe15fe69ed5897b267eb53d486f521c2"
-    },
-    "revisions/mosi_testf1_full40_20260909/README.md": {
-      "sha256": "a49220c0bab281c1ce87b43011f95d0451fd28a26d224d6038aeed0a6abbd558",
-      "bytes": 478,
-      "source_sha256": "a49220c0bab281c1ce87b43011f95d0451fd28a26d224d6038aeed0a6abbd558"
-    },
-    "revisions/mosi_testf1_full40_20260909/launch_spec.json": {
-      "sha256": "83d369d20c5a1be82e2b69551bb5c9dd83107ef8ee111fd4eae96ebf11deeae1",
-      "bytes": 898,
-      "source_sha256": "83d369d20c5a1be82e2b69551bb5c9dd83107ef8ee111fd4eae96ebf11deeae1"
-    },
-    "revisions/mosi_testf1_full40_20260909/mse_router/__init__.py": {
-      "sha256": "e5a51cae990c2ef0a979c7009e57b2d2a90994d019fe6de5a9a86f2f0931f075",
-      "bytes": 482,
-      "source_sha256": "ad75675eae190322ca4f829c560064a42790083310c9848bf2e7eda017c39735",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_testf1_full40_20260909/mse_router/backbone_model.py": {
-      "sha256": "7c7bc4005a3587220eb517727e68c12075849b98babb666b7acb74cdf76189a4",
-      "bytes": 14638,
-      "source_sha256": "38357aae94a49d2689fb124277067c7ec42c0ce5bbc3d3213f24fd9f2e0977f9",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_testf1_full40_20260909/mse_router/data.py": {
-      "sha256": "bec7e7028e751179a573d6f20b93266b223e1c5d296776f815fefa5f45e15f23",
-      "bytes": 7755,
-      "source_sha256": "61d0b2a71acb5214a9cadd731266280514471a3f843173a1dcae49781e8b73ff",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_testf1_full40_20260909/mse_router/diagnostics.py": {
-      "sha256": "89a5c4b9af97596fa7f22b9b462f71da66d5508f821fa786aacd71f3e010b0c3",
-      "bytes": 2042,
-      "source_sha256": "d94e68e0fb9838b4d7332d07299629b6b4fa3c5e6ebac2942c61512398bc5a3b",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_testf1_full40_20260909/mse_router/math_utils.py": {
-      "sha256": "413e260ab3eddfe11b39e22a25c9bc448a8142e13d73033e65a3b9f84f765695",
-      "bytes": 8010,
-      "source_sha256": "6626b2ace3928f9860c1603de194faf66cfcb603da482e2d30c57d5edd3282c2",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_testf1_full40_20260909/mse_router/model.py": {
-      "sha256": "cae9ae2c7176792a61bf26837cbbe8231a48f39e29342b7ae5bb9cb712b6c0a5",
-      "bytes": 36767,
-      "source_sha256": "3f5c406cb697aa746417d5478f13acc42c009e58f484f77b378e87e8fb970703",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_testf1_full40_20260909/mse_router/sequence.py": {
-      "sha256": "d14573601f1a25b1c5d1022d42c2354fd07e94d94ab01f7bb0c3e389a59e09e0",
-      "bytes": 2058,
-      "source_sha256": "fa6232273b670d413408440ccfd5ea2ab5f0c7cae7cf7807a88d6730d45453b7",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_testf1_full40_20260909/mse_router/trainer.py": {
-      "sha256": "437c5edf9ef793cdf6c471cf7abee81d75f08b36b82d5cd1fa250cff9e454248",
-      "bytes": 24047,
-      "source_sha256": "051265680f07e1be396ce9846f3b4e55a2485abc5d04fb7f60192602e10fb3bc",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_testf1_full40_20260909/scripts/run_backbone_mosei_router.py": {
-      "sha256": "b53222bebb75c2eb1cd1ed39f1331403e9ecee73845f941df933ec31d979c448",
-      "bytes": 5992,
-      "source_sha256": "eb89756fe228e923a7e90ef5c03a63cd75271b401f27e81d6f5aad0a5e3195a5",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_testf1_full40_20260909/scripts/run_chatglm3_mosi.py": {
-      "sha256": "08f4e838f984987143d85cb09cb9785e2449ff2ea599598a3e5c95a19f4a76fe",
-      "bytes": 2131,
-      "source_sha256": "6d843ca384ed58b4dc3ed6c09bff314e69c7807568bace93dbeacd58058035ef",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_testf1_full40_20260909/scripts/run_chatglm3_mosi_extra_seeds.py": {
-      "sha256": "1ccb882048d0a7ca20df0f093350ec67c826f2a49838154f78d66d7eeef1cee9",
-      "bytes": 454,
-      "source_sha256": "5fe278e1ce783eb523262b9efcc2a7eb3e5ae54f7a2eac6623e3187e93dec460",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_testf1_full40_20260909/scripts/run_chatglm3_mosi_seed1115.py": {
-      "sha256": "2102f0cd1848014fb2c834a92e63f8ea495f43ed7bba25d9e64d9ff31e1e8e85",
-      "bytes": 449,
-      "source_sha256": "c5967722c13ae94962f5c081821dd1516dbaeb6955778252256aad6f64ba89ad",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_testf1_full40_20260909/scripts/run_qwen_mosei_router.py": {
-      "sha256": "3cef89c4941e6724c04cf5604e859f3316392e36799797b08de0143e036bda66",
-      "bytes": 25755,
-      "source_sha256": "9e26e47be84bf5d0bac82302a79e3c7751ae623125b8899ec3cade180123a0c5",
-      "python_ast_matches_source": true
-    },
-    "revisions/mosi_testf1_full40_20260909/scripts/train_testf1max_full40.slurm": {
-      "sha256": "2b7b907cb894d407cc61ab63882f355fa9ddb27b72b36b5e8b2621bc24290553",
-      "bytes": 3046,
-      "source_sha256": "a77ad423c59419f7165cf62cec7b4612234efac8f02935fae4c127a7ccfcdb6d",
-      "shell_commands_and_slurm_directives_match_source": true
-    },
-    "revisions/mosi_testf1_full40_20260909/scripts/train_testf1max_full40_extra.slurm": {
-      "sha256": "9f8371d080078fc6d65c375bb6893e21f9ad33eda23e4966610a3626afbac455",
-      "bytes": 3071,
-      "source_sha256": "f4a1d008ce44e7a908bb4c6dcc59af51911d1ef8e8b08be9c9c359c2dbfa6319",
-      "shell_commands_and_slurm_directives_match_source": true
-    },
-    "revisions/mosi_testf1_full40_20260909/scripts/train_testf1max_seed1115_full40.slurm": {
-      "sha256": "95c5db76b0e7fe7b93e1cf7e9d4b647b99e2c3008ef9e5906ec9532965bd398c",
-      "bytes": 2933,
-      "source_sha256": "6d90f3715dde04a83d7237d2c0ba20a1d901cf11a79e630a5fe4fb359cbfc429",
-      "shell_commands_and_slurm_directives_match_source": true
-    },
-    "revisions/mosi_testf1_full40_20260909/scripts/train_testf1max_seed1115_gpu3090_4090.slurm": {
-      "sha256": "a5ffc792f9cb39c53e8723fb85e155f5c0696960bc500ed81b533e110ab5ed9f",
-      "bytes": 2981,
-      "source_sha256": "c7664494b067e44d0d537bec3b7adaaa13ef592832452ee0ebd542b66276a1c1",
-      "shell_commands_and_slurm_directives_match_source": true
-    },
-    "revisions/mosi_testf1_full40_20260909/validation.json": {
-      "sha256": "243278bb23de747410bd519d5b79f8157c9a0e306bc92c82221ff2e19f167521",
-      "bytes": 1016,
-      "source_sha256": "243278bb23de747410bd519d5b79f8157c9a0e306bc92c82221ff2e19f167521"
-    },
-    "revisions/mosi_testf1_full40_20260909/validation.txt": {
-      "sha256": "4060f40d7d846a54f883195781057690a3d9e94fa8a93e5cfa23b78f9898dd8e",
-      "bytes": 280,
-      "source_sha256": "4060f40d7d846a54f883195781057690a3d9e94fa8a93e5cfa23b78f9898dd8e"
-    },
-    "revisions/sims_backbone_lr1e3_d00_sat3090_20260912/README.md": {
-      "sha256": "c6174458a70d58142f7137f88f191b7b3ec989c355689fe8e46e396854b8e3eb",
-      "bytes": 1393,
-      "source_sha256": "c6174458a70d58142f7137f88f191b7b3ec989c355689fe8e46e396854b8e3eb"
-    },
-    "revisions/sims_backbone_lr1e3_d00_sat3090_20260912/baseline_verification.json": {
-      "sha256": "5977e3689193b616f7840a38d217f7d433920808ea8c5b77cdab71f07def9813",
-      "bytes": 4132,
-      "source_sha256": "5977e3689193b616f7840a38d217f7d433920808ea8c5b77cdab71f07def9813"
-    },
-    "revisions/sims_backbone_lr1e3_d00_sat3090_20260912/configs/sims.json": {
-      "sha256": "69af60c3dda4f4dca918f8c56c397b5d33faef8c5f18658daf42071ace515472",
-      "bytes": 2500,
-      "source_sha256": "69af60c3dda4f4dca918f8c56c397b5d33faef8c5f18658daf42071ace515472"
-    },
-    "revisions/sims_backbone_lr1e3_d00_sat3090_20260912/launch_spec.json": {
-      "sha256": "0e331d8d780f82bfdb78831640915f028f1477046c4447a97002b519ce095c3d",
-      "bytes": 1707,
-      "source_sha256": "0e331d8d780f82bfdb78831640915f028f1477046c4447a97002b519ce095c3d"
-    },
-    "revisions/sims_backbone_lr1e3_d00_sat3090_20260912/llama2_cpu_validation.json": {
-      "sha256": "e67de214b4ec215daf7c80017a2bf8d13de766f278978b2a867ec73d30f8049e",
-      "bytes": 1838,
-      "source_sha256": "e67de214b4ec215daf7c80017a2bf8d13de766f278978b2a867ec73d30f8049e"
-    },
-    "revisions/sims_backbone_lr1e3_d00_sat3090_20260912/llama32_cpu_validation.json": {
-      "sha256": "a3d0bbb16a09a3c1e64790a80b42c6c79b5a08736b5b050c0e2e8cddfaaf3c97",
-      "bytes": 1850,
-      "source_sha256": "a3d0bbb16a09a3c1e64790a80b42c6c79b5a08736b5b050c0e2e8cddfaaf3c97"
-    },
-    "revisions/sims_backbone_lr1e3_d00_sat3090_20260912/mse_router/__init__.py": {
-      "sha256": "e5a51cae990c2ef0a979c7009e57b2d2a90994d019fe6de5a9a86f2f0931f075",
-      "bytes": 482,
-      "source_sha256": "ad75675eae190322ca4f829c560064a42790083310c9848bf2e7eda017c39735",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_backbone_lr1e3_d00_sat3090_20260912/mse_router/backbone_model.py": {
-      "sha256": "ccd2f3314fec103d23133c0e47bd15c1d5f0ef2862f816549ea554a7bb4d8f05",
-      "bytes": 14643,
-      "source_sha256": "be4ab9e0710c02603d20550022db4f359ec3d22cf0af768a7419e769c7324e19",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_backbone_lr1e3_d00_sat3090_20260912/mse_router/data.py": {
+      "source_files": {
+        "mosi_testf1_full40_20260909/mse_router/math_utils.py": "6626b2ace3928f9860c1603de194faf66cfcb603da482e2d30c57d5edd3282c2"
+      }
+    },
+    "mosi/mse_router/model.py": {
+      "sha256": "3ba4dd46462ed75aa84cd2101405480147a7de2d1fe1189b95f7a548f73b1a96",
+      "bytes": 38110,
+      "source_files": {
+        "mosi_testf1_full40_20260909/mse_router/model.py": "3f5c406cb697aa746417d5478f13acc42c009e58f484f77b378e87e8fb970703",
+        "mosi_testf1_full40_20260909/mse_router/backbone_model.py": "38357aae94a49d2689fb124277067c7ec42c0ce5bbc3d3213f24fd9f2e0977f9"
+      }
+    },
+    "mosi/mse_router/sequence.py": {
+      "sha256": "050492767bde06a0755d7848ede065e064c72118e5c49118b8286fa0785f407a",
+      "bytes": 1994,
+      "source_files": {
+        "mosi_testf1_full40_20260909/mse_router/sequence.py": "fa6232273b670d413408440ccfd5ea2ab5f0c7cae7cf7807a88d6730d45453b7"
+      }
+    },
+    "mosi/mse_router/trainer.py": {
+      "sha256": "ffa45b2d943ea27b6ecffec79fad9142a3189b7c8172da19e065d4cf813c7fca",
+      "bytes": 19784,
+      "source_files": {
+        "mosi_testf1_full40_20260909/mse_router/trainer.py": "051265680f07e1be396ce9846f3b4e55a2485abc5d04fb7f60192602e10fb3bc"
+      }
+    },
+    "mosi/scripts/chatglm_setup.py": {
+      "sha256": "65f87c2ae270e7d4862c531fac828fab949b1886b9b5ef7094e1be452992bab0",
+      "bytes": 3096,
+      "source_files": {
+        "mosi_testf1_full40_20260909/scripts/run_backbone_mosei_router.py": "eb89756fe228e923a7e90ef5c03a63cd75271b401f27e81d6f5aad0a5e3195a5"
+      }
+    },
+    "mosi/scripts/experiment.py": {
+      "sha256": "4a8c69efd73229352b43bcb4656707a38edc0b0f0eb03f4204882b29ea4c81d1",
+      "bytes": 24373,
+      "source_files": {
+        "mosi_testf1_full40_20260909/scripts/run_qwen_mosei_router.py": "9e26e47be84bf5d0bac82302a79e3c7751ae623125b8899ec3cade180123a0c5"
+      }
+    },
+    "mosi/scripts/run_chatglm3_mosi.py": {
+      "sha256": "86a2e15a75e4b5fb086c8dd8be0b838429af4cd48cff08309b6e12b7c246accb",
+      "bytes": 2049,
+      "source_files": {
+        "mosi_testf1_full40_20260909/scripts/run_chatglm3_mosi.py": "6d843ca384ed58b4dc3ed6c09bff314e69c7807568bace93dbeacd58058035ef"
+      }
+    },
+    "mosi/scripts/train.slurm": {
+      "sha256": "d339a3b6f974158adaca671b7357b115684a23e972038c7572678163d2e8899f",
+      "bytes": 2300,
+      "source_files": {}
+    },
+    "sims/README.md": {
+      "sha256": "e5d358f41ee8184fa6b4b85f7fd10a554f481a65b7c43f859adb1cb8b0f5e064",
+      "bytes": 659,
+      "source_files": {
+        "sims_lr1e3_d00_testf1_three_seeds_20260910/README.md": "5211f3bcd45a17858faf7b4463c4b538989f50d01dc217aa802b82009d64f3f5"
+      }
+    },
+    "sims/configs/sims.json": {
+      "sha256": "d1befed47f4b3187c3ecb9051beb241afec2297f09beda21cbe591e6cb93d4ab",
+      "bytes": 2373,
+      "source_files": {
+        "sims_lr1e3_d00_testf1_three_seeds_20260910/configs/sims.json": "69af60c3dda4f4dca918f8c56c397b5d33faef8c5f18658daf42071ace515472"
+      }
+    },
+    "sims/mse_router/__init__.py": {
+      "sha256": "10640f77ab4826c72c538d79669eae8b8d2aa49aff4a219d8e438b138d6ea519",
+      "bytes": 480,
+      "source_files": {
+        "sims_lr1e3_d00_testf1_three_seeds_20260910/mse_router/__init__.py": "ad75675eae190322ca4f829c560064a42790083310c9848bf2e7eda017c39735"
+      }
+    },
+    "sims/mse_router/data.py": {
       "sha256": "bd5b0ea40e1259920eb9b6d93999157049f932e630924f348d68f96e8eb6c44f",
       "bytes": 7761,
-      "source_sha256": "cdd6851e6a946203cea8ae66d1b6dad657b7da02fd39c07dfd8cc4782e69b1d3",
-      "python_ast_matches_source": true
+      "source_files": {
+        "sims_lr1e3_d00_testf1_three_seeds_20260910/mse_router/data.py": "cdd6851e6a946203cea8ae66d1b6dad657b7da02fd39c07dfd8cc4782e69b1d3"
+      }
     },
-    "revisions/sims_backbone_lr1e3_d00_sat3090_20260912/mse_router/diagnostics.py": {
+    "sims/mse_router/diagnostics.py": {
       "sha256": "89a5c4b9af97596fa7f22b9b462f71da66d5508f821fa786aacd71f3e010b0c3",
       "bytes": 2042,
-      "source_sha256": "d94e68e0fb9838b4d7332d07299629b6b4fa3c5e6ebac2942c61512398bc5a3b",
-      "python_ast_matches_source": true
+      "source_files": {
+        "sims_lr1e3_d00_testf1_three_seeds_20260910/mse_router/diagnostics.py": "d94e68e0fb9838b4d7332d07299629b6b4fa3c5e6ebac2942c61512398bc5a3b"
+      }
     },
-    "revisions/sims_backbone_lr1e3_d00_sat3090_20260912/mse_router/math_utils.py": {
+    "sims/mse_router/math_utils.py": {
       "sha256": "413e260ab3eddfe11b39e22a25c9bc448a8142e13d73033e65a3b9f84f765695",
       "bytes": 8010,
-      "source_sha256": "6626b2ace3928f9860c1603de194faf66cfcb603da482e2d30c57d5edd3282c2",
-      "python_ast_matches_source": true
+      "source_files": {
+        "sims_lr1e3_d00_testf1_three_seeds_20260910/mse_router/math_utils.py": "6626b2ace3928f9860c1603de194faf66cfcb603da482e2d30c57d5edd3282c2"
+      }
     },
-    "revisions/sims_backbone_lr1e3_d00_sat3090_20260912/mse_router/model.py": {
-      "sha256": "66c1f8bff3f2154d3fa7a80049f30873a2146f98a08525c0d03041cdbf85c588",
-      "bytes": 36772,
-      "source_sha256": "77000f11ea2319a9b34e4fdb428ab6fe587d7918e8366548f22d8aefb1882594",
-      "python_ast_matches_source": true
+    "sims/mse_router/model.py": {
+      "sha256": "56d4a4e9582c608311366f7a5a91c8b71c4da8874cbfa96c56e80ae21c9020df",
+      "bytes": 38115,
+      "source_files": {
+        "sims_lr1e3_d00_testf1_three_seeds_20260910/mse_router/model.py": "77000f11ea2319a9b34e4fdb428ab6fe587d7918e8366548f22d8aefb1882594",
+        "sims_lr1e3_d00_testf1_three_seeds_20260910/mse_router/backbone_model.py": "be4ab9e0710c02603d20550022db4f359ec3d22cf0af768a7419e769c7324e19"
+      }
     },
-    "revisions/sims_backbone_lr1e3_d00_sat3090_20260912/mse_router/sequence.py": {
-      "sha256": "d14573601f1a25b1c5d1022d42c2354fd07e94d94ab01f7bb0c3e389a59e09e0",
-      "bytes": 2058,
-      "source_sha256": "fa6232273b670d413408440ccfd5ea2ab5f0c7cae7cf7807a88d6730d45453b7",
-      "python_ast_matches_source": true
+    "sims/mse_router/sequence.py": {
+      "sha256": "050492767bde06a0755d7848ede065e064c72118e5c49118b8286fa0785f407a",
+      "bytes": 1994,
+      "source_files": {
+        "sims_lr1e3_d00_testf1_three_seeds_20260910/mse_router/sequence.py": "fa6232273b670d413408440ccfd5ea2ab5f0c7cae7cf7807a88d6730d45453b7"
+      }
     },
-    "revisions/sims_backbone_lr1e3_d00_sat3090_20260912/mse_router/trainer.py": {
-      "sha256": "304b4918a7131f2741dd47ca83ce419fde94e2614ee5e9d951ca33b703177d6d",
-      "bytes": 24006,
-      "source_sha256": "1d1aebe0c092d08e1a5d0e3e0d599529b01f7fb44c234e665a203ca0060c74a8",
-      "python_ast_matches_source": true
+    "sims/mse_router/trainer.py": {
+      "sha256": "c176ea282c52fd460af00dd7d263423a4e5567f8c3133df3a53ee23c70ec3d39",
+      "bytes": 19827,
+      "source_files": {
+        "sims_lr1e3_d00_testf1_three_seeds_20260910/mse_router/trainer.py": "1d1aebe0c092d08e1a5d0e3e0d599529b01f7fb44c234e665a203ca0060c74a8"
+      }
     },
-    "revisions/sims_backbone_lr1e3_d00_sat3090_20260912/qwen18_cpu_validation.json": {
-      "sha256": "b4719a952f9b450b9c573dccb73ab078835700c32c45fb6d48c7f048841367d4",
-      "bytes": 1829,
-      "source_sha256": "b4719a952f9b450b9c573dccb73ab078835700c32c45fb6d48c7f048841367d4"
+    "sims/scripts/chatglm_setup.py": {
+      "sha256": "65f87c2ae270e7d4862c531fac828fab949b1886b9b5ef7094e1be452992bab0",
+      "bytes": 3096,
+      "source_files": {
+        "sims_lr1e3_d00_testf1_three_seeds_20260910/scripts/run_backbone_mosei_router.py": "eb89756fe228e923a7e90ef5c03a63cd75271b401f27e81d6f5aad0a5e3195a5"
+      }
     },
-    "revisions/sims_backbone_lr1e3_d00_sat3090_20260912/scripts/run_backbone_mosei_router.py": {
-      "sha256": "b53222bebb75c2eb1cd1ed39f1331403e9ecee73845f941df933ec31d979c448",
-      "bytes": 5992,
-      "source_sha256": "eb89756fe228e923a7e90ef5c03a63cd75271b401f27e81d6f5aad0a5e3195a5",
-      "python_ast_matches_source": true
+    "sims/scripts/experiment.py": {
+      "sha256": "c4bf9d721e7985f3b5ddadf3ef1ed690fb467c11ed754dddef7cf8a74b223939",
+      "bytes": 24363,
+      "source_files": {
+        "sims_lr1e3_d00_testf1_three_seeds_20260910/scripts/run_qwen_mosei_router.py": "9e26e47be84bf5d0bac82302a79e3c7751ae623125b8899ec3cade180123a0c5"
+      }
     },
-    "revisions/sims_backbone_lr1e3_d00_sat3090_20260912/scripts/run_chatglm3_sims.py": {
-      "sha256": "a84bda0a7ba6902c44b41e6a342a0bc432ad7fbf08ee8375cf72edc8210968d5",
-      "bytes": 3469,
-      "source_sha256": "b1b7a05d5a99b0c688c801c674c02389b4d61258000705318b8b003ab833fa41",
-      "python_ast_matches_source": true
+    "sims/scripts/run_chatglm3_sims.py": {
+      "sha256": "58b08929430c4907399e878fede508f4101e50b13bdd6ec1fa9dd858814e4f7e",
+      "bytes": 3462,
+      "source_files": {
+        "sims_lr1e3_d00_testf1_three_seeds_20260910/scripts/run_chatglm3_sims.py": "b1b7a05d5a99b0c688c801c674c02389b4d61258000705318b8b003ab833fa41"
+      }
     },
-    "revisions/sims_backbone_lr1e3_d00_sat3090_20260912/scripts/run_qwen_mosei_router.py": {
-      "sha256": "3cef89c4941e6724c04cf5604e859f3316392e36799797b08de0143e036bda66",
-      "bytes": 25755,
-      "source_sha256": "9e26e47be84bf5d0bac82302a79e3c7751ae623125b8899ec3cade180123a0c5",
-      "python_ast_matches_source": true
+    "sims/scripts/train.slurm": {
+      "sha256": "d6f690131f8675789b034cae6348b506f28b11cfc8d6129b2b3d1aa054873baf",
+      "bytes": 2290,
+      "source_files": {}
     },
-    "revisions/sims_backbone_lr1e3_d00_sat3090_20260912/scripts/run_transfer_sims.py": {
-      "sha256": "4079013bd3b7df7b1bbe5a534375b6362567757a24e5d8dc6f48b10d566cf4dc",
-      "bytes": 5872,
-      "source_sha256": "190a1f89897c1ec52bc5dd3e3d24f22d35d738a02fbb852001e31ab64292737d",
-      "python_ast_matches_source": true
+    "simsv2/README.md": {
+      "sha256": "9bd52812704fb2937f4c21003bcf0881ed78f12c7d2f2d0b32715a3ee3eb91fa",
+      "bytes": 666,
+      "source_files": {
+        "simsv2_lr1e4_d03_five_seeds_20260910/README.md": "778eb395f3a2ab9d2dff715d674a74f4141ac347ad6dd98b35646dad3ad3cb32"
+      }
     },
-    "revisions/sims_backbone_lr1e3_d00_sat3090_20260912/scripts/submit_deferred.py": {
-      "sha256": "f0416e5afab1ce530f22194e889920768a9c69dc90d196277ba59c57877a8cab",
-      "bytes": 5093,
-      "source_sha256": "d86f2656569c19c300bc3ceb5783b78108b2f0544e55d8803eb2b27f5c0b052f",
-      "python_ast_matches_source": true
+    "simsv2/configs/simsv2.json": {
+      "sha256": "aef6bc39672c07a8f0f532b861fb13a1479ea862e58089f368513241c33bd19f",
+      "bytes": 1807,
+      "source_files": {
+        "simsv2_lr1e4_d03_five_seeds_20260910/configs/simsv2.json": "14c502f0cdabcf42dd61953cf37322c0601a2c23ed121a7b3a640f28cd424eaf"
+      }
     },
-    "revisions/sims_backbone_lr1e3_d00_sat3090_20260912/scripts/train_llama2.slurm": {
-      "sha256": "c6837a9ee53fe1d40ad6d8186a28f9845f31c9bfd96562dd510d8ab893ba89fc",
-      "bytes": 3082,
-      "source_sha256": "ab2ae03cd88569a392919373319c227196e9b667471bc722fdbae10a1794bac1",
-      "shell_commands_and_slurm_directives_match_source": true
+    "simsv2/mse_router/__init__.py": {
+      "sha256": "10640f77ab4826c72c538d79669eae8b8d2aa49aff4a219d8e438b138d6ea519",
+      "bytes": 480,
+      "source_files": {
+        "simsv2_lr1e4_d03_five_seeds_20260910/mse_router/__init__.py": "ad75675eae190322ca4f829c560064a42790083310c9848bf2e7eda017c39735"
+      }
     },
-    "revisions/sims_backbone_lr1e3_d00_sat3090_20260912/scripts/train_llama2_gpu4090_seed1115.slurm": {
-      "sha256": "c476b5f47d3f12de230c12011e26fc4d2a53a46418a2d33ccef937b30fc7195a",
-      "bytes": 3075,
-      "source_sha256": "14ce368202d2861f941476af8a820b6d0cecbe284a95a6d8c7f4b911e3f821b5",
-      "shell_commands_and_slurm_directives_match_source": true
-    },
-    "revisions/sims_backbone_lr1e3_d00_sat3090_20260912/scripts/train_llama32.slurm": {
-      "sha256": "7c963cb65c71205ed40273922c0b6d2b5b5bd25750a08154fdc90b0981f6b065",
-      "bytes": 3090,
-      "source_sha256": "880414126d5b42d3896f5bead0d26ee2df77b6607fff7d9090b476d7d57f7cd2",
-      "shell_commands_and_slurm_directives_match_source": true
-    },
-    "revisions/sims_backbone_lr1e3_d00_sat3090_20260912/scripts/train_qwen18.slurm": {
-      "sha256": "bcb1f6aed54a60a9ad3873f5854dd00cd9de0f1f93a48e792315b0db76b02450",
-      "bytes": 3082,
-      "source_sha256": "5eac8ba42d364d706c16c731c769295db5ffac8e371bd87802a2f05adcee7034",
-      "shell_commands_and_slurm_directives_match_source": true
-    },
-    "revisions/sims_backbone_lr1e3_d00_sat3090_20260912/scripts/validate_transfer_cpu.py": {
-      "sha256": "9b4d945e1f839ed4c425ef4864310ce4e4647efa658b2f8bae68fc7f9374ed27",
-      "bytes": 2348,
-      "source_sha256": "742c1086db90402f806bcf4192fa6d257c80089751f77130260c7276e9f69484",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_backbone_lr1e3_d00_sat3090_20260912/submission_observation.json": {
-      "sha256": "bf6a3565964c033a7549da50f4e04bbef5478012001992b712b60685e0c4276d",
-      "bytes": 836,
-      "source_sha256": "bf6a3565964c033a7549da50f4e04bbef5478012001992b712b60685e0c4276d"
-    },
-    "revisions/sims_lr1e3_d00_testf1_three_seeds_20260910/README.md": {
-      "sha256": "5211f3bcd45a17858faf7b4463c4b538989f50d01dc217aa802b82009d64f3f5",
-      "bytes": 270,
-      "source_sha256": "5211f3bcd45a17858faf7b4463c4b538989f50d01dc217aa802b82009d64f3f5"
-    },
-    "revisions/sims_lr1e3_d00_testf1_three_seeds_20260910/configs/sims.json": {
-      "sha256": "69af60c3dda4f4dca918f8c56c397b5d33faef8c5f18658daf42071ace515472",
-      "bytes": 2500,
-      "source_sha256": "69af60c3dda4f4dca918f8c56c397b5d33faef8c5f18658daf42071ace515472"
-    },
-    "revisions/sims_lr1e3_d00_testf1_three_seeds_20260910/mse_router/__init__.py": {
-      "sha256": "e5a51cae990c2ef0a979c7009e57b2d2a90994d019fe6de5a9a86f2f0931f075",
-      "bytes": 482,
-      "source_sha256": "ad75675eae190322ca4f829c560064a42790083310c9848bf2e7eda017c39735",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr1e3_d00_testf1_three_seeds_20260910/mse_router/backbone_model.py": {
-      "sha256": "ccd2f3314fec103d23133c0e47bd15c1d5f0ef2862f816549ea554a7bb4d8f05",
-      "bytes": 14643,
-      "source_sha256": "be4ab9e0710c02603d20550022db4f359ec3d22cf0af768a7419e769c7324e19",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr1e3_d00_testf1_three_seeds_20260910/mse_router/data.py": {
+    "simsv2/mse_router/data.py": {
       "sha256": "bd5b0ea40e1259920eb9b6d93999157049f932e630924f348d68f96e8eb6c44f",
       "bytes": 7761,
-      "source_sha256": "cdd6851e6a946203cea8ae66d1b6dad657b7da02fd39c07dfd8cc4782e69b1d3",
-      "python_ast_matches_source": true
+      "source_files": {
+        "simsv2_lr1e4_d03_five_seeds_20260910/mse_router/data.py": "cdd6851e6a946203cea8ae66d1b6dad657b7da02fd39c07dfd8cc4782e69b1d3"
+      }
     },
-    "revisions/sims_lr1e3_d00_testf1_three_seeds_20260910/mse_router/diagnostics.py": {
+    "simsv2/mse_router/diagnostics.py": {
       "sha256": "89a5c4b9af97596fa7f22b9b462f71da66d5508f821fa786aacd71f3e010b0c3",
       "bytes": 2042,
-      "source_sha256": "d94e68e0fb9838b4d7332d07299629b6b4fa3c5e6ebac2942c61512398bc5a3b",
-      "python_ast_matches_source": true
+      "source_files": {
+        "simsv2_lr1e4_d03_five_seeds_20260910/mse_router/diagnostics.py": "d94e68e0fb9838b4d7332d07299629b6b4fa3c5e6ebac2942c61512398bc5a3b"
+      }
     },
-    "revisions/sims_lr1e3_d00_testf1_three_seeds_20260910/mse_router/math_utils.py": {
+    "simsv2/mse_router/math_utils.py": {
       "sha256": "413e260ab3eddfe11b39e22a25c9bc448a8142e13d73033e65a3b9f84f765695",
       "bytes": 8010,
-      "source_sha256": "6626b2ace3928f9860c1603de194faf66cfcb603da482e2d30c57d5edd3282c2",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr1e3_d00_testf1_three_seeds_20260910/mse_router/model.py": {
-      "sha256": "66c1f8bff3f2154d3fa7a80049f30873a2146f98a08525c0d03041cdbf85c588",
-      "bytes": 36772,
-      "source_sha256": "77000f11ea2319a9b34e4fdb428ab6fe587d7918e8366548f22d8aefb1882594",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr1e3_d00_testf1_three_seeds_20260910/mse_router/sequence.py": {
-      "sha256": "d14573601f1a25b1c5d1022d42c2354fd07e94d94ab01f7bb0c3e389a59e09e0",
-      "bytes": 2058,
-      "source_sha256": "fa6232273b670d413408440ccfd5ea2ab5f0c7cae7cf7807a88d6730d45453b7",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr1e3_d00_testf1_three_seeds_20260910/mse_router/trainer.py": {
-      "sha256": "304b4918a7131f2741dd47ca83ce419fde94e2614ee5e9d951ca33b703177d6d",
-      "bytes": 24006,
-      "source_sha256": "1d1aebe0c092d08e1a5d0e3e0d599529b01f7fb44c234e665a203ca0060c74a8",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr1e3_d00_testf1_three_seeds_20260910/scripts/run_backbone_mosei_router.py": {
-      "sha256": "b53222bebb75c2eb1cd1ed39f1331403e9ecee73845f941df933ec31d979c448",
-      "bytes": 5992,
-      "source_sha256": "eb89756fe228e923a7e90ef5c03a63cd75271b401f27e81d6f5aad0a5e3195a5",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr1e3_d00_testf1_three_seeds_20260910/scripts/run_chatglm3_sims.py": {
-      "sha256": "a84bda0a7ba6902c44b41e6a342a0bc432ad7fbf08ee8375cf72edc8210968d5",
-      "bytes": 3469,
-      "source_sha256": "b1b7a05d5a99b0c688c801c674c02389b4d61258000705318b8b003ab833fa41",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr1e3_d00_testf1_three_seeds_20260910/scripts/run_qwen_mosei_router.py": {
-      "sha256": "3cef89c4941e6724c04cf5604e859f3316392e36799797b08de0143e036bda66",
-      "bytes": 25755,
-      "source_sha256": "9e26e47be84bf5d0bac82302a79e3c7751ae623125b8899ec3cade180123a0c5",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr1e3_d00_testf1_three_seeds_20260910/scripts/train_testbest_full40.slurm": {
-      "sha256": "c335ecca2dfef9f8382bff500d3498f41ffad1d3ddc33480fe658907ecf12ec8",
-      "bytes": 3059,
-      "source_sha256": "3dc6dd5c91a7ef378760fb59117631669613649cc8c44d899cf1fe5b6b3cf645",
-      "shell_commands_and_slurm_directives_match_source": true
-    },
-    "revisions/sims_lr1e3_d00_testf1_three_seeds_20260910/validation.json": {
-      "sha256": "b9f0045da4730e840336264bf59863eafb8fa5a94c43b79717301598e93c3a2c",
-      "bytes": 806,
-      "source_sha256": "b9f0045da4730e840336264bf59863eafb8fa5a94c43b79717301598e93c3a2c"
-    },
-    "revisions/sims_lr1e3_testf1_three_seeds_20260910/README.md": {
-      "sha256": "8925373daf8ba0a783d974d1d91f4acafc876d3c81c499494db4594dd14c74e8",
-      "bytes": 322,
-      "source_sha256": "8925373daf8ba0a783d974d1d91f4acafc876d3c81c499494db4594dd14c74e8"
-    },
-    "revisions/sims_lr1e3_testf1_three_seeds_20260910/configs/sims.json": {
-      "sha256": "ab18a120f4b0a8a5fe910d09c8f01bfa7b0bde4651d1d2d642ed3550969774e0",
-      "bytes": 2496,
-      "source_sha256": "ab18a120f4b0a8a5fe910d09c8f01bfa7b0bde4651d1d2d642ed3550969774e0"
-    },
-    "revisions/sims_lr1e3_testf1_three_seeds_20260910/mse_router/__init__.py": {
-      "sha256": "e5a51cae990c2ef0a979c7009e57b2d2a90994d019fe6de5a9a86f2f0931f075",
-      "bytes": 482,
-      "source_sha256": "ad75675eae190322ca4f829c560064a42790083310c9848bf2e7eda017c39735",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr1e3_testf1_three_seeds_20260910/mse_router/backbone_model.py": {
-      "sha256": "acd19c1ef5c18533bb5a509274740fffcecaa2066d6c2283cb99b69df2f21615",
-      "bytes": 14643,
-      "source_sha256": "0a2005ec27f7c0db39e1b29066488b9e240e00e917e00b24edf5b55e3fd30468",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr1e3_testf1_three_seeds_20260910/mse_router/data.py": {
-      "sha256": "bd5b0ea40e1259920eb9b6d93999157049f932e630924f348d68f96e8eb6c44f",
-      "bytes": 7761,
-      "source_sha256": "cdd6851e6a946203cea8ae66d1b6dad657b7da02fd39c07dfd8cc4782e69b1d3",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr1e3_testf1_three_seeds_20260910/mse_router/diagnostics.py": {
-      "sha256": "89a5c4b9af97596fa7f22b9b462f71da66d5508f821fa786aacd71f3e010b0c3",
-      "bytes": 2042,
-      "source_sha256": "d94e68e0fb9838b4d7332d07299629b6b4fa3c5e6ebac2942c61512398bc5a3b",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr1e3_testf1_three_seeds_20260910/mse_router/math_utils.py": {
-      "sha256": "413e260ab3eddfe11b39e22a25c9bc448a8142e13d73033e65a3b9f84f765695",
-      "bytes": 8010,
-      "source_sha256": "6626b2ace3928f9860c1603de194faf66cfcb603da482e2d30c57d5edd3282c2",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr1e3_testf1_three_seeds_20260910/mse_router/model.py": {
-      "sha256": "3b3ed827fd2bf8a590f0a240cf164fe4809758a8cd26a8a3fca9454015fb6a65",
-      "bytes": 36772,
-      "source_sha256": "277be366f4855b3c3fd3bedd8f172a7df49661e8dd319575be15462ce7dfa9a9",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr1e3_testf1_three_seeds_20260910/mse_router/sequence.py": {
-      "sha256": "d14573601f1a25b1c5d1022d42c2354fd07e94d94ab01f7bb0c3e389a59e09e0",
-      "bytes": 2058,
-      "source_sha256": "fa6232273b670d413408440ccfd5ea2ab5f0c7cae7cf7807a88d6730d45453b7",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr1e3_testf1_three_seeds_20260910/mse_router/trainer.py": {
-      "sha256": "304b4918a7131f2741dd47ca83ce419fde94e2614ee5e9d951ca33b703177d6d",
-      "bytes": 24006,
-      "source_sha256": "1d1aebe0c092d08e1a5d0e3e0d599529b01f7fb44c234e665a203ca0060c74a8",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr1e3_testf1_three_seeds_20260910/scripts/run_backbone_mosei_router.py": {
-      "sha256": "b53222bebb75c2eb1cd1ed39f1331403e9ecee73845f941df933ec31d979c448",
-      "bytes": 5992,
-      "source_sha256": "eb89756fe228e923a7e90ef5c03a63cd75271b401f27e81d6f5aad0a5e3195a5",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr1e3_testf1_three_seeds_20260910/scripts/run_chatglm3_sims.py": {
-      "sha256": "a84bda0a7ba6902c44b41e6a342a0bc432ad7fbf08ee8375cf72edc8210968d5",
-      "bytes": 3469,
-      "source_sha256": "b1b7a05d5a99b0c688c801c674c02389b4d61258000705318b8b003ab833fa41",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr1e3_testf1_three_seeds_20260910/scripts/run_qwen_mosei_router.py": {
-      "sha256": "3cef89c4941e6724c04cf5604e859f3316392e36799797b08de0143e036bda66",
-      "bytes": 25755,
-      "source_sha256": "9e26e47be84bf5d0bac82302a79e3c7751ae623125b8899ec3cade180123a0c5",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr1e3_testf1_three_seeds_20260910/scripts/train_testbest_full40.slurm": {
-      "sha256": "63e90e1125bb5513b78b3580ccd2415439a9eb0fade0a8386d3ccf574ca19c35",
-      "bytes": 3053,
-      "source_sha256": "28843d8c043d86248b461b3faa606a86fee32cb140491b984ff216a9341ea138",
-      "shell_commands_and_slurm_directives_match_source": true
-    },
-    "revisions/sims_lr1e3_testf1_three_seeds_20260910/validation.json": {
-      "sha256": "ba712e9ea4de5bcca1c4c4118d589c379e29dc73e81d939505376d1b50f38719",
-      "bytes": 588,
-      "source_sha256": "ba712e9ea4de5bcca1c4c4118d589c379e29dc73e81d939505376d1b50f38719"
-    },
-    "revisions/sims_lr1e4_testf1_three_seeds_20260910/README.md": {
-      "sha256": "8925373daf8ba0a783d974d1d91f4acafc876d3c81c499494db4594dd14c74e8",
-      "bytes": 322,
-      "source_sha256": "8925373daf8ba0a783d974d1d91f4acafc876d3c81c499494db4594dd14c74e8"
-    },
-    "revisions/sims_lr1e4_testf1_three_seeds_20260910/configs/sims.json": {
-      "sha256": "ee23a8469b6647ebcd8fc12a81625a2e58bd754b77153e5af776ec415e180917",
-      "bytes": 2498,
-      "source_sha256": "ee23a8469b6647ebcd8fc12a81625a2e58bd754b77153e5af776ec415e180917"
-    },
-    "revisions/sims_lr1e4_testf1_three_seeds_20260910/mse_router/__init__.py": {
-      "sha256": "e5a51cae990c2ef0a979c7009e57b2d2a90994d019fe6de5a9a86f2f0931f075",
-      "bytes": 482,
-      "source_sha256": "ad75675eae190322ca4f829c560064a42790083310c9848bf2e7eda017c39735",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr1e4_testf1_three_seeds_20260910/mse_router/backbone_model.py": {
-      "sha256": "acd19c1ef5c18533bb5a509274740fffcecaa2066d6c2283cb99b69df2f21615",
-      "bytes": 14643,
-      "source_sha256": "0a2005ec27f7c0db39e1b29066488b9e240e00e917e00b24edf5b55e3fd30468",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr1e4_testf1_three_seeds_20260910/mse_router/data.py": {
-      "sha256": "bd5b0ea40e1259920eb9b6d93999157049f932e630924f348d68f96e8eb6c44f",
-      "bytes": 7761,
-      "source_sha256": "cdd6851e6a946203cea8ae66d1b6dad657b7da02fd39c07dfd8cc4782e69b1d3",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr1e4_testf1_three_seeds_20260910/mse_router/diagnostics.py": {
-      "sha256": "89a5c4b9af97596fa7f22b9b462f71da66d5508f821fa786aacd71f3e010b0c3",
-      "bytes": 2042,
-      "source_sha256": "d94e68e0fb9838b4d7332d07299629b6b4fa3c5e6ebac2942c61512398bc5a3b",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr1e4_testf1_three_seeds_20260910/mse_router/math_utils.py": {
-      "sha256": "413e260ab3eddfe11b39e22a25c9bc448a8142e13d73033e65a3b9f84f765695",
-      "bytes": 8010,
-      "source_sha256": "6626b2ace3928f9860c1603de194faf66cfcb603da482e2d30c57d5edd3282c2",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr1e4_testf1_three_seeds_20260910/mse_router/model.py": {
-      "sha256": "3b3ed827fd2bf8a590f0a240cf164fe4809758a8cd26a8a3fca9454015fb6a65",
-      "bytes": 36772,
-      "source_sha256": "277be366f4855b3c3fd3bedd8f172a7df49661e8dd319575be15462ce7dfa9a9",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr1e4_testf1_three_seeds_20260910/mse_router/sequence.py": {
-      "sha256": "d14573601f1a25b1c5d1022d42c2354fd07e94d94ab01f7bb0c3e389a59e09e0",
-      "bytes": 2058,
-      "source_sha256": "fa6232273b670d413408440ccfd5ea2ab5f0c7cae7cf7807a88d6730d45453b7",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr1e4_testf1_three_seeds_20260910/mse_router/trainer.py": {
-      "sha256": "304b4918a7131f2741dd47ca83ce419fde94e2614ee5e9d951ca33b703177d6d",
-      "bytes": 24006,
-      "source_sha256": "1d1aebe0c092d08e1a5d0e3e0d599529b01f7fb44c234e665a203ca0060c74a8",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr1e4_testf1_three_seeds_20260910/scripts/run_backbone_mosei_router.py": {
-      "sha256": "b53222bebb75c2eb1cd1ed39f1331403e9ecee73845f941df933ec31d979c448",
-      "bytes": 5992,
-      "source_sha256": "eb89756fe228e923a7e90ef5c03a63cd75271b401f27e81d6f5aad0a5e3195a5",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr1e4_testf1_three_seeds_20260910/scripts/run_chatglm3_sims.py": {
-      "sha256": "a84bda0a7ba6902c44b41e6a342a0bc432ad7fbf08ee8375cf72edc8210968d5",
-      "bytes": 3469,
-      "source_sha256": "b1b7a05d5a99b0c688c801c674c02389b4d61258000705318b8b003ab833fa41",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr1e4_testf1_three_seeds_20260910/scripts/run_qwen_mosei_router.py": {
-      "sha256": "3cef89c4941e6724c04cf5604e859f3316392e36799797b08de0143e036bda66",
-      "bytes": 25755,
-      "source_sha256": "9e26e47be84bf5d0bac82302a79e3c7751ae623125b8899ec3cade180123a0c5",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr1e4_testf1_three_seeds_20260910/scripts/train_seed1115_sat3090.slurm": {
-      "sha256": "da9f90d9e984c126184fc8d2b6e2e83c9b5c90d4a10196a94c8753a19d19fa69",
-      "bytes": 3044,
-      "source_sha256": "d60d61a41c95f8fef72c4f8165fa345d5f308f5776ea7d9a476b78e84e11e928",
-      "shell_commands_and_slurm_directives_match_source": true
-    },
-    "revisions/sims_lr1e4_testf1_three_seeds_20260910/scripts/train_testbest_full40.slurm": {
-      "sha256": "eb1502fa84a990ad8f09bdcc17c5fd2146f135900cd1595c82e3b12bb9451637",
-      "bytes": 3053,
-      "source_sha256": "2a1dd21b2b787e8b1905f3cc0d5bc1c5c4ab923f431f8068f4f209229670d49d",
-      "shell_commands_and_slurm_directives_match_source": true
-    },
-    "revisions/sims_lr1e4_testf1_three_seeds_20260910/validation.json": {
-      "sha256": "ba712e9ea4de5bcca1c4c4118d589c379e29dc73e81d939505376d1b50f38719",
-      "bytes": 588,
-      "source_sha256": "ba712e9ea4de5bcca1c4c4118d589c379e29dc73e81d939505376d1b50f38719"
-    },
-    "revisions/sims_lr5e3_head1e3_s1113_s1115_20260910/README.md": {
-      "sha256": "8925373daf8ba0a783d974d1d91f4acafc876d3c81c499494db4594dd14c74e8",
-      "bytes": 322,
-      "source_sha256": "8925373daf8ba0a783d974d1d91f4acafc876d3c81c499494db4594dd14c74e8"
-    },
-    "revisions/sims_lr5e3_head1e3_s1113_s1115_20260910/configs/sims.json": {
-      "sha256": "811165ec3af6bc4eedbdf25aeb89443ab54ee15bfedd5741dea6f0fd43107d25",
-      "bytes": 2487,
-      "source_sha256": "811165ec3af6bc4eedbdf25aeb89443ab54ee15bfedd5741dea6f0fd43107d25"
-    },
-    "revisions/sims_lr5e3_head1e3_s1113_s1115_20260910/mse_router/__init__.py": {
-      "sha256": "e5a51cae990c2ef0a979c7009e57b2d2a90994d019fe6de5a9a86f2f0931f075",
-      "bytes": 482,
-      "source_sha256": "ad75675eae190322ca4f829c560064a42790083310c9848bf2e7eda017c39735",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr5e3_head1e3_s1113_s1115_20260910/mse_router/backbone_model.py": {
-      "sha256": "acd19c1ef5c18533bb5a509274740fffcecaa2066d6c2283cb99b69df2f21615",
-      "bytes": 14643,
-      "source_sha256": "0a2005ec27f7c0db39e1b29066488b9e240e00e917e00b24edf5b55e3fd30468",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr5e3_head1e3_s1113_s1115_20260910/mse_router/data.py": {
-      "sha256": "bd5b0ea40e1259920eb9b6d93999157049f932e630924f348d68f96e8eb6c44f",
-      "bytes": 7761,
-      "source_sha256": "cdd6851e6a946203cea8ae66d1b6dad657b7da02fd39c07dfd8cc4782e69b1d3",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr5e3_head1e3_s1113_s1115_20260910/mse_router/diagnostics.py": {
-      "sha256": "89a5c4b9af97596fa7f22b9b462f71da66d5508f821fa786aacd71f3e010b0c3",
-      "bytes": 2042,
-      "source_sha256": "d94e68e0fb9838b4d7332d07299629b6b4fa3c5e6ebac2942c61512398bc5a3b",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr5e3_head1e3_s1113_s1115_20260910/mse_router/math_utils.py": {
-      "sha256": "413e260ab3eddfe11b39e22a25c9bc448a8142e13d73033e65a3b9f84f765695",
-      "bytes": 8010,
-      "source_sha256": "6626b2ace3928f9860c1603de194faf66cfcb603da482e2d30c57d5edd3282c2",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr5e3_head1e3_s1113_s1115_20260910/mse_router/model.py": {
-      "sha256": "3b3ed827fd2bf8a590f0a240cf164fe4809758a8cd26a8a3fca9454015fb6a65",
-      "bytes": 36772,
-      "source_sha256": "277be366f4855b3c3fd3bedd8f172a7df49661e8dd319575be15462ce7dfa9a9",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr5e3_head1e3_s1113_s1115_20260910/mse_router/sequence.py": {
-      "sha256": "d14573601f1a25b1c5d1022d42c2354fd07e94d94ab01f7bb0c3e389a59e09e0",
-      "bytes": 2058,
-      "source_sha256": "fa6232273b670d413408440ccfd5ea2ab5f0c7cae7cf7807a88d6730d45453b7",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr5e3_head1e3_s1113_s1115_20260910/mse_router/trainer.py": {
-      "sha256": "304b4918a7131f2741dd47ca83ce419fde94e2614ee5e9d951ca33b703177d6d",
-      "bytes": 24006,
-      "source_sha256": "1d1aebe0c092d08e1a5d0e3e0d599529b01f7fb44c234e665a203ca0060c74a8",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr5e3_head1e3_s1113_s1115_20260910/scripts/run_backbone_mosei_router.py": {
-      "sha256": "b53222bebb75c2eb1cd1ed39f1331403e9ecee73845f941df933ec31d979c448",
-      "bytes": 5992,
-      "source_sha256": "eb89756fe228e923a7e90ef5c03a63cd75271b401f27e81d6f5aad0a5e3195a5",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr5e3_head1e3_s1113_s1115_20260910/scripts/run_chatglm3_sims.py": {
-      "sha256": "535080320e3981505adb51375da847ade68904a5755cd22e3d736f8531e9bc21",
-      "bytes": 3397,
-      "source_sha256": "0704841e1e223818a7a89ea09d9b2c4fa4311aeba6e3adaa774105fe59e977da",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr5e3_head1e3_s1113_s1115_20260910/scripts/run_qwen_mosei_router.py": {
-      "sha256": "3cef89c4941e6724c04cf5604e859f3316392e36799797b08de0143e036bda66",
-      "bytes": 25755,
-      "source_sha256": "9e26e47be84bf5d0bac82302a79e3c7751ae623125b8899ec3cade180123a0c5",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_lr5e3_head1e3_s1113_s1115_20260910/scripts/train_testbest_full40.slurm": {
-      "sha256": "834103c0de441a66803828f9c5d4927323ca6c0c98cdb7645c4722a417d808af",
-      "bytes": 3057,
-      "source_sha256": "d470ff610d363c3cac1a3518fabd89f2db7d8cc332e8094b9897adb7096bf3e4",
-      "shell_commands_and_slurm_directives_match_source": true
-    },
-    "revisions/sims_lr5e3_head1e3_s1113_s1115_20260910/validation.json": {
-      "sha256": "ba712e9ea4de5bcca1c4c4118d589c379e29dc73e81d939505376d1b50f38719",
-      "bytes": 588,
-      "source_sha256": "ba712e9ea4de5bcca1c4c4118d589c379e29dc73e81d939505376d1b50f38719"
-    },
-    "revisions/sims_testf1_extra_full40_20260909/README.md": {
-      "sha256": "8925373daf8ba0a783d974d1d91f4acafc876d3c81c499494db4594dd14c74e8",
-      "bytes": 322,
-      "source_sha256": "8925373daf8ba0a783d974d1d91f4acafc876d3c81c499494db4594dd14c74e8"
-    },
-    "revisions/sims_testf1_extra_full40_20260909/configs/sims.json": {
-      "sha256": "c42aadb9aa1883e51dc11efea3f2d273bb1f691bfa4b324b656b9956fcb32a2a",
-      "bytes": 2503,
-      "source_sha256": "c42aadb9aa1883e51dc11efea3f2d273bb1f691bfa4b324b656b9956fcb32a2a"
-    },
-    "revisions/sims_testf1_extra_full40_20260909/mse_router/__init__.py": {
-      "sha256": "e5a51cae990c2ef0a979c7009e57b2d2a90994d019fe6de5a9a86f2f0931f075",
-      "bytes": 482,
-      "source_sha256": "ad75675eae190322ca4f829c560064a42790083310c9848bf2e7eda017c39735",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_testf1_extra_full40_20260909/mse_router/backbone_model.py": {
-      "sha256": "acd19c1ef5c18533bb5a509274740fffcecaa2066d6c2283cb99b69df2f21615",
-      "bytes": 14643,
-      "source_sha256": "0a2005ec27f7c0db39e1b29066488b9e240e00e917e00b24edf5b55e3fd30468",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_testf1_extra_full40_20260909/mse_router/data.py": {
-      "sha256": "bd5b0ea40e1259920eb9b6d93999157049f932e630924f348d68f96e8eb6c44f",
-      "bytes": 7761,
-      "source_sha256": "cdd6851e6a946203cea8ae66d1b6dad657b7da02fd39c07dfd8cc4782e69b1d3",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_testf1_extra_full40_20260909/mse_router/diagnostics.py": {
-      "sha256": "89a5c4b9af97596fa7f22b9b462f71da66d5508f821fa786aacd71f3e010b0c3",
-      "bytes": 2042,
-      "source_sha256": "d94e68e0fb9838b4d7332d07299629b6b4fa3c5e6ebac2942c61512398bc5a3b",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_testf1_extra_full40_20260909/mse_router/math_utils.py": {
-      "sha256": "413e260ab3eddfe11b39e22a25c9bc448a8142e13d73033e65a3b9f84f765695",
-      "bytes": 8010,
-      "source_sha256": "6626b2ace3928f9860c1603de194faf66cfcb603da482e2d30c57d5edd3282c2",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_testf1_extra_full40_20260909/mse_router/model.py": {
-      "sha256": "3b3ed827fd2bf8a590f0a240cf164fe4809758a8cd26a8a3fca9454015fb6a65",
-      "bytes": 36772,
-      "source_sha256": "277be366f4855b3c3fd3bedd8f172a7df49661e8dd319575be15462ce7dfa9a9",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_testf1_extra_full40_20260909/mse_router/sequence.py": {
-      "sha256": "d14573601f1a25b1c5d1022d42c2354fd07e94d94ab01f7bb0c3e389a59e09e0",
-      "bytes": 2058,
-      "source_sha256": "fa6232273b670d413408440ccfd5ea2ab5f0c7cae7cf7807a88d6730d45453b7",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_testf1_extra_full40_20260909/mse_router/trainer.py": {
-      "sha256": "304b4918a7131f2741dd47ca83ce419fde94e2614ee5e9d951ca33b703177d6d",
-      "bytes": 24006,
-      "source_sha256": "1d1aebe0c092d08e1a5d0e3e0d599529b01f7fb44c234e665a203ca0060c74a8",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_testf1_extra_full40_20260909/scripts/run_backbone_mosei_router.py": {
-      "sha256": "b53222bebb75c2eb1cd1ed39f1331403e9ecee73845f941df933ec31d979c448",
-      "bytes": 5992,
-      "source_sha256": "eb89756fe228e923a7e90ef5c03a63cd75271b401f27e81d6f5aad0a5e3195a5",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_testf1_extra_full40_20260909/scripts/run_chatglm3_sims.py": {
-      "sha256": "535080320e3981505adb51375da847ade68904a5755cd22e3d736f8531e9bc21",
-      "bytes": 3397,
-      "source_sha256": "0704841e1e223818a7a89ea09d9b2c4fa4311aeba6e3adaa774105fe59e977da",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_testf1_extra_full40_20260909/scripts/run_qwen_mosei_router.py": {
-      "sha256": "3cef89c4941e6724c04cf5604e859f3316392e36799797b08de0143e036bda66",
-      "bytes": 25755,
-      "source_sha256": "9e26e47be84bf5d0bac82302a79e3c7751ae623125b8899ec3cade180123a0c5",
-      "python_ast_matches_source": true
-    },
-    "revisions/sims_testf1_extra_full40_20260909/scripts/train_testbest_full40.slurm": {
-      "sha256": "4fb38a3e8957824ad18cfd9e66670ec4e9436091039117c1f012187a8a27e1c9",
-      "bytes": 3089,
-      "source_sha256": "373a4997748679202ac97f52b0be4a8253af4e7988c22e64527a3d6b686bde9e",
-      "shell_commands_and_slurm_directives_match_source": true
-    },
-    "revisions/sims_testf1_extra_full40_20260909/validation.json": {
-      "sha256": "ba712e9ea4de5bcca1c4c4118d589c379e29dc73e81d939505376d1b50f38719",
-      "bytes": 588,
-      "source_sha256": "ba712e9ea4de5bcca1c4c4118d589c379e29dc73e81d939505376d1b50f38719"
+      "source_files": {
+        "simsv2_lr1e4_d03_five_seeds_20260910/mse_router/math_utils.py": "6626b2ace3928f9860c1603de194faf66cfcb603da482e2d30c57d5edd3282c2"
+      }
+    },
+    "simsv2/mse_router/model.py": {
+      "sha256": "c22f9efc5a47735de6796ced55f40c75a1a144f4f177c62d212023b95c7da55d",
+      "bytes": 38115,
+      "source_files": {
+        "simsv2_lr1e4_d03_five_seeds_20260910/mse_router/model.py": "d84301cedf17b912c65b9f0f4cff3b036c2f2cc64e0ade697bc395be8fccecae",
+        "simsv2_lr1e4_d03_five_seeds_20260910/mse_router/backbone_model.py": "06a296d28f89dc53fead51bba34c0389f2959e5aa1b373d65065b6a4e8127407"
+      }
+    },
+    "simsv2/mse_router/sequence.py": {
+      "sha256": "050492767bde06a0755d7848ede065e064c72118e5c49118b8286fa0785f407a",
+      "bytes": 1994,
+      "source_files": {
+        "simsv2_lr1e4_d03_five_seeds_20260910/mse_router/sequence.py": "fa6232273b670d413408440ccfd5ea2ab5f0c7cae7cf7807a88d6730d45453b7"
+      }
+    },
+    "simsv2/mse_router/trainer.py": {
+      "sha256": "9851e6ac68b3e40d8c9ee7ba8616e732182ed93afaf92d3d1d19dc394d84cfe4",
+      "bytes": 19393,
+      "source_files": {
+        "simsv2_lr1e4_d03_five_seeds_20260910/mse_router/trainer.py": "1fdce0b5c729826722a7afe6cef3b7e1e77d48867dcdf81ab3ffd5b0acf93143"
+      }
+    },
+    "simsv2/scripts/chatglm_setup.py": {
+      "sha256": "65f87c2ae270e7d4862c531fac828fab949b1886b9b5ef7094e1be452992bab0",
+      "bytes": 3096,
+      "source_files": {
+        "simsv2_lr1e4_d03_five_seeds_20260910/scripts/run_backbone_mosei_router.py": "eb89756fe228e923a7e90ef5c03a63cd75271b401f27e81d6f5aad0a5e3195a5"
+      }
+    },
+    "simsv2/scripts/experiment.py": {
+      "sha256": "d69f5078efeb4f30d0d34d8b55c5bc178b64355f0ecffafefa138ec4f84d34e3",
+      "bytes": 24355,
+      "source_files": {
+        "simsv2_lr1e4_d03_five_seeds_20260910/scripts/run_qwen_mosei_router.py": "9e26e47be84bf5d0bac82302a79e3c7751ae623125b8899ec3cade180123a0c5"
+      }
+    },
+    "simsv2/scripts/run_chatglm3_simsv2.py": {
+      "sha256": "ed354950d2949b6a00254adad310c663650d0aaf466cbf5a23c2e54d029fea73",
+      "bytes": 3466,
+      "source_files": {
+        "simsv2_lr1e4_d03_five_seeds_20260910/scripts/run_chatglm3_simsv2.py": "3e73fea8c17359e60f0776920e9ca895f73bf787892e202aac39b6c21bee1a85"
+      }
+    },
+    "simsv2/scripts/train.slurm": {
+      "sha256": "922c12505b2c974422d02714c3dab256d285e858b26094b8ce8efa2db3236eee",
+      "bytes": 2316,
+      "source_files": {}
     }
   },
   "manifest_self_excluded_from_file_hashes": true

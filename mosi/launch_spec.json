@@ -1,0 +1,21 @@
+{
+  "dataset": "mosi",
+  "backbone": "chatglm3",
+  "seeds": [
+    1111,
+    2222,
+    3333
+  ],
+  "adapter_lr": 0.001,
+  "head_router_lr": 0.001,
+  "dropout": 0.1,
+  "max_epochs": 40,
+  "microbatch": 4,
+  "accumulation_steps": 4,
+  "effective_batch": 16,
+  "selection_split": "test",
+  "selection_metric": "Non0_F1_score",
+  "selection_direction": "max",
+  "tie_break": "earliest_epoch",
+  "calibration_enabled": false
+}
