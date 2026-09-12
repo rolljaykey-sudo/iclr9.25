@@ -1,0 +1,1 @@
+MOSI ChatGLM3 conflict V4. LR adapter/head=0.001. Router and ordinal-head dropout=0.0. Seeds 1111,1113,1115. 40 epochs, maximum test Non0 F1 selection, no calibration. Microbatch 4 x accumulation 4. One RTX4090 per seed.

@@ -1,153 +1,61 @@
-# NAACL-10-12 — Multimodal sentiment experiments
+# Final Code：测试集 F1 选模版本
 
-## Experiment versions
+本仓库从 `/gpfs/work/cpt/jiachenhou23/mse router new conflict` 独立复制，
+本地副本为 `/gpfs/work/cpt/jiachenhou23/final code`。
+仅保留实际按**测试集 F1 最大值**选择检查点的 13 个实验版本，源码已补充中文注释。
+原始目录不变；所有层级的 `outputs`、虚拟环境和 Python 缓存均未复制。
 
-| Version | Description | Documentation |
+## 选模规则
+
+| 数据集 | 选模指标 | 规则 |
 | --- | --- | --- |
-| **CoMoR · Cross-Modal Conflict Modeling** | Qwen-1.8B / Llama-2-7B / Llama-3.2-3B; frozen backbones, joint training, LR 0.001, dropout 0, test-F1 checkpoint selection | **[中文版本说明](versions/CoMoR/VERSION.md)** · [Source and reproduction](versions/CoMoR/README.md) |
-| Original Router V2, no input augmentation | MOSEI / CH-SIMS v2; joint training, temperature calibration, Router-only training | Existing source and instructions below |
+| MOSI、MOSEI | 测试集 `Non0_F1_score` | 40 轮中取最大值，F1 并列保留最早轮次 |
+| SIMS | 测试集 `F1_score` | 40 轮中取最大值，F1 并列保留最早轮次 |
 
-The V4 experiment is archived in its own `versions/` directory with exact source
-hashes, bundled upstream dependencies and its original experiment protocol.
-Its training retains modality perturbations and selects checkpoints using test
-F1; see the version document before comparing its results with V2.
+这些版本使用联合训练，最终重新加载所选检查点进行评估，`fit` 不执行温度校准。
+MAE、相关系数等仍作为伴随指标记录，**不参与检查点选择或并列比较**。
+验证集选模、测试集 MAE 选模版本以及指向旧 MAE 版本的两个遗留启动脚本已从副本移除。
 
-## Original Router V2, no input augmentation
+## 保留的实验
 
-Complete original Router V2 no-augmentation source for multimodal sentiment analysis.
-The original model, losses, optimizer settings, calibration and training stages are
-preserved byte-for-byte. `SOURCE_MANIFEST.json` records the exported source checksums.
+每个 `revisions/<版本>/` 都保存对应的 `mse_router/` 实现、`scripts/` 入口及配置。
+按目录内的实际配置选择入口；不要把不同版本的训练器和配置混用。
 
-## Source and entry points
+| 数据集 | 实验目录 | 主要入口 |
+| --- | --- | --- |
+| MOSEI | [mosei_lr1e4_testf1_20260910](revisions/mosei_lr1e4_testf1_20260910/) | `scripts/run_chatglm3_mosei.py` |
+| MOSEI | [mosei_lr5e3_head1e3_testf1_20260910](revisions/mosei_lr5e3_head1e3_testf1_20260910/) | `scripts/run_chatglm3_mosei.py` |
+| MOSI | [mosi_backbone_lr1e3_d01_20260912](revisions/mosi_backbone_lr1e3_d01_20260912/) | `scripts/run_transfer_mosi.py` |
+| MOSI | [mosi_llama32_lr1e3_d01_20260912](revisions/mosi_llama32_lr1e3_d01_20260912/) | `scripts/run_transfer_mosi.py` |
+| MOSI | [mosi_lr1e3_d00_three_seeds_20260910](revisions/mosi_lr1e3_d00_three_seeds_20260910/) | `scripts/run_chatglm3_mosi.py` |
+| MOSI | [mosi_lr1e4_testf1_full40_20260910](revisions/mosi_lr1e4_testf1_full40_20260910/) | `scripts/run_chatglm3_mosi.py` |
+| MOSI | [mosi_testf1_full40_20260909](revisions/mosi_testf1_full40_20260909/) | `scripts/run_chatglm3_mosi.py` |
+| SIMS | [sims_backbone_lr1e3_d00_sat3090_20260912](revisions/sims_backbone_lr1e3_d00_sat3090_20260912/) | `scripts/run_transfer_sims.py` |
+| SIMS | [sims_lr1e3_d00_testf1_three_seeds_20260910](revisions/sims_lr1e3_d00_testf1_three_seeds_20260910/) | `scripts/run_chatglm3_sims.py` |
+| SIMS | [sims_lr1e3_testf1_three_seeds_20260910](revisions/sims_lr1e3_testf1_three_seeds_20260910/) | `scripts/run_chatglm3_sims.py` |
+| SIMS | [sims_lr1e4_testf1_three_seeds_20260910](revisions/sims_lr1e4_testf1_three_seeds_20260910/) | `scripts/run_chatglm3_sims.py` |
+| SIMS | [sims_lr5e3_head1e3_s1113_s1115_20260910](revisions/sims_lr5e3_head1e3_s1113_s1115_20260910/) | `scripts/run_chatglm3_sims.py` |
+| SIMS | [sims_testf1_extra_full40_20260909](revisions/sims_testf1_extra_full40_20260909/) | `scripts/run_chatglm3_sims.py` |
 
-| Dataset | Backbone | Original revision | Original training seeds |
-|---|---|---|---|
-| CMU-MOSEI | Qwen-1.8B | `MSE-Router/revisions/no_augmentation_v1` | 1111, 2222, 3333, 4444, 5555 |
-| CMU-MOSEI | Llama-2-7b-hf | same | 4444, 5555 |
-| CMU-MOSEI | ChatGLM3-6B-base | same | 3333, 4444, 5555 |
-| CH-SIMS v2 | Qwen-1.8B | `MSE-Router/revisions/simsv2_no_augmentation_v1` | 1111, 2222, 3333 |
-| CH-SIMS v2 | ChatGLM3-6B-base | same | 1111, 2222, 3333 |
+## 中文注释导航
 
-The per-backbone seed restrictions above are part of the original launchers and
-are retained. The original SIMS v2 release has no Llama training entry point.
+- `mse_router/math_utils.py`：连续标签插值、熵、Wasserstein-1 冲突、缺失模态权重。
+- `mse_router/model.py`：冻结骨干、单模态诊断、30 维路由输入、音视频门控、生成与辅助损失。
+- `mse_router/sequence.py`：有序 token 压紧、左侧填充及监督标签对齐。
+- `mse_router/data.py`：视频分组划分、批次迁移、音视频扰动及模态存在掩码。
+- `mse_router/trainer.py`：梯度累积、混合精度、测试 F1 选模、保存及重载检查点。
+- `mse_router/backbone_model.py`：不同语言模型的加载方式和前向接口。
+- `scripts/`：数据集与骨干配置、预检、随机种子入口及 Slurm 作业说明。
 
-- `mse_router/model.py`: natural-text residual path, modality encoders and adapters,
-  seven-anchor ordinal head, conflict/uncertainty features and softmax Router.
-- `mse_router/backbone_model.py`: frozen Llama2 and ChatGLM3 interfaces.
-- `mse_router/data.py`: video-group-disjoint calibration split and batching.
-- `mse_router/trainer.py`: training, temperature calibration, validation and testing.
-- Revision `scripts/` and `tests/`: original launchers, Slurm scripts and checks.
-- Root `MSE-Router/mse_router/`: original V2 reference modules required by the
-  no-augmentation source-integrity tests.
-- `MSE-Adapter/`: bundled original configuration, data loader, metrics and required
-  GLM model implementation, with upstream licenses.
+## 环境与历史记录
 
-## Original protocol
+本次整理保留原始算法、超参数、配置和路径常量。源码仍依赖工作区外部的
+`MSE-Adapter`、数据、预训练模型及对应 Python 环境，这些资源未打包。
+Slurm 脚本中的代码、日志和输出路径仍是原始 HPC 实验路径；在副本中重跑时，
+应将它们设置为自己的代码目录和独立输出目录，并在有效 Slurm GPU 分配中执行。
+目录名称含空格，Shell 中请为路径加引号。
 
-Disable modality dropping, audio noise and visual masking in both training stages.
-Retain model-internal Dropout and the original stage-dependent train/eval modes.
-Frozen LLM weights are FP16; trainable parameters stay FP32, with CUDA autocast and
-GradScaler. Microbatch 4 × gradient accumulation 4 gives effective batch 16.
-
-The original pipeline is:
-
-1. Joint adapter / encoder / ordinal-head / Router training: at most 40 epochs,
-   patience 10, generation loss plus auxiliary ordinal loss weighted by 0.3.
-2. Fit three temperatures on the original approximately 10% video-disjoint training
-   holdout (split seed 20260903).
-3. Router-only training: at most 10 epochs, patience 3. Select by validation MAE
-   within this stage, then evaluate the clean test set.
-
-Original peak learning rates are **adapter 0.005, head / Router 0.001**, with AdamW,
-10% warmup, cosine decay and gradient clipping. These are the original experiment
-settings; the later LR/dropout joint-only tuning study is a separate release.
-MOSEI uses labels on [-3, 3]; SIMS v2 uses native labels and anchors on [-1, 1].
-The original numerical/calibration and performance-gate behavior is preserved.
-
-## Environment
-
-Python 3.10 and a CUDA-compatible PyTorch environment are required. The dependency
-pins record the environment used by the original experiments:
-
-```bash
-python3.10 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r MSE-Router/requirements-qwen-repro.txt
-```
-
-Supply the original local Qwen / Llama / ChatGLM checkpoints and processed MOSEI or
-SIMS v2 pickle separately. No checkpoint weights, processed datasets, training
-outputs, virtual environments or credentials are included in this source repository.
-
-The expected processed files are:
-
-- MOSEI `unaligned_50.pkl`: SHA256
-  `ad8b23d50557045e7d47959ce6c5b955d8d983f2979c7d9b7b9226f6dd6fec1f`.
-- SIMS v2 `ch-simsv2s.pkl`: SHA256
-  `f8fd9a1dd070588a714ff357b00f31d5bb93277b4e502cf2dc4ff718a95fc49b`.
-
-Dataset download references are in the original
-[MSE-Adapter repository](https://github.com/AZYoung233/MSE-Adapter) and
-[SIMS v2 processed dataset](https://huggingface.co/datasets/AZYoung/SIMSV2_processed).
-
-## Portable launch wrapper
-
-`run_noaug.py` is a thin wrapper around the unchanged original entry points. It
-supplies explicit model/data paths, selects the bundled Adapter dependency, and
-always passes `--training-augmentation none --router-variant full --skip-robustness`.
-It does not change the architecture or training algorithm.
-
-A CPU-only configuration / dependency check does not load model weights or data:
-
-```bash
-python run_noaug.py --dataset simsv2 --backbone qwen --mode preflight \
-  --model-path /path/to/Qwen-1_8B --dataset-path /path/to/ch-simsv2s.pkl \
-  --check-config
-```
-
-In a Slurm allocation with one visible GPU, run the same command without
-`--check-config` for the required GPU preflight. Once it succeeds, use
-`--mode train --seed 1111`. Each seed starts from fresh trainable modules;
-preflight-updated weights are discarded.
-
-Outputs remain under `MSE-Router/outputs/<backbone>-<dataset>-router-v2-no-augmentation/`.
-Each seed has checkpoints, stage histories, calibration, `manifest.json`, `run.log`
-and `result.json`. The launchers reject existing output directories. For a retry,
-choose a new child directory with `--output-root` and run its matching preflight.
-The Qwen MOSEI comparison command additionally requires original augmented-control
-results; SIMS v2 aggregation requires all three completed matching seeds.
-
-For XJTLU Slurm, `scripts/train_noaug.slurm` is a portable single-GPU example:
-
-```bash
-export REPO_DIR="$PWD"
-export PYTHON_BIN="$PWD/.venv/bin/python"
-export DATASET=simsv2 BACKBONE=qwen SEED=1111
-export MODEL_PATH=/path/to/Qwen-1_8B DATASET_PATH=/path/to/ch-simsv2s.pkl
-mkdir -p logs
-# Choose live available resources and an appropriate wall time.
-MODE=preflight sbatch --time=01:00:00 --output="$PWD/logs/%x-%j.out" \
-  --error="$PWD/logs/%x-%j.err" scripts/train_noaug.slurm
-# Replace PREFLIGHT_JOB_ID with the actual successful submission ID.
-MODE=train sbatch --dependency=afterok:PREFLIGHT_JOB_ID \
-  --output="$PWD/logs/%x-%j.out" --error="$PWD/logs/%x-%j.err" scripts/train_noaug.slurm
-```
-
-The original revision Slurm files preserve their historical HPC paths for source
-reproducibility. Use the root portable wrapper/template for a different checkout.
-Do not run GPU training on a login node.
-
-## Validation
-
-```bash
-python scripts/check_source.py
-python scripts/test_source.py
-```
-
-These run integrity checks and portable CPU unit tests in separate processes for
-the two dataset implementations. Historical integration tests that require local
-model files, datasets or old training outputs remain in the original test files;
-the portable test command reports those exclusions explicitly. Upload preparation
-does not launch new training or claim fresh GPU validation of the exported wrapper.
-
-See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for dependency attribution.
+注释会改变源码 SHA-256，所以副本需要重新生成预检记录后才能训练。
+各版本原有的 `validation.json`、`source_hashes.json`、`baseline_verification.json`
+等文件保留为历史记录，不代表注释后版本的新验证结果。
+本次导出的文件清单、来源散列和检查结果见 [EXPORT_MANIFEST.json](EXPORT_MANIFEST.json)。

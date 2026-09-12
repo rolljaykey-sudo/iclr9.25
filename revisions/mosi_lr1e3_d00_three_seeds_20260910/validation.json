@@ -1,0 +1,13 @@
+{
+  "source": "/gpfs/work/cpt/jiachenhou23/mse router new conflict/revisions/mosi_testf1_full40_20260909",
+  "syntax": "passed",
+  "changed_python_files": [
+    "mse_router/model.py",
+    "mse_router/backbone_model.py",
+    "scripts/run_chatglm3_mosi.py"
+  ],
+  "changes": "dropout 0.1->0.0, seed list and output path",
+  "adapter_lr": 0.001,
+  "head_router_lr": 0.001,
+  "selection": "maximum test Non0 F1"
+}

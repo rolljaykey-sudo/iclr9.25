@@ -1,0 +1,38 @@
+{
+  "status": "passed",
+  "checks": [
+    "config_and_dataset",
+    "40_epochs",
+    "highest_nonzero_test_f1",
+    "earliest_epoch_on_ties",
+    "mae_does_not_select",
+    "final_checkpoint_reload"
+  ],
+  "settings": {
+    "adapter_lr": 0.001,
+    "head_router_lr": 0.001,
+    "weight_decay": 0.01,
+    "adam_epsilon": 0.0001,
+    "warmup_fraction": 0.1,
+    "gradient_clip": 1.0,
+    "accumulation_steps": 4,
+    "stage1_max_epochs": 40,
+    "stage1_patience": 41,
+    "progress_interval": 100,
+    "quality_gate_epoch": 0,
+    "quality_gate_max_mae": 0.72,
+    "quality_gate_min_corr": 0.3
+  },
+  "selection": {
+    "split": "test",
+    "metric": "Non0_F1_score",
+    "direction": "max",
+    "criterion": "maximum test Non0_F1_score across all 40 epochs; earliest on ties",
+    "calibration_accepted": false,
+    "calibration_enabled": false,
+    "best_epoch": 10,
+    "best_test_f1": 0.91,
+    "selected_test_mae": 0.6
+  },
+  "source_sha256": "051265680f07e1be396ce9846f3b4e55a2485abc5d04fb7f60192602e10fb3bc"
+}

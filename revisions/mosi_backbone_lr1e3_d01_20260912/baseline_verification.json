@@ -1,0 +1,80 @@
+{
+  "selected_runs": [
+    {
+      "seed": 1111,
+      "source": "/gpfs/work/cpt/jiachenhou23/mse router new conflict/outputs/chatglm3-mosi-lr1e3-testf1max-full40-20260909/task_1111/seed_1111/stage1_history.json",
+      "epoch": 36,
+      "metrics": {
+        "Has0_acc_2": 0.8834,
+        "Has0_F1_score": 0.8833,
+        "Non0_acc_2": 0.9055,
+        "Non0_F1_score": 0.9053,
+        "Mult_acc_5": 0.5831,
+        "Mult_acc_7": 0.5146,
+        "MAE": 0.5774999856948853,
+        "Corr": 0.867,
+        "condition": "clean",
+        "samples": 686,
+        "invalid_generations": 0,
+        "out_of_range_generations": 1,
+        "mean_router_weights": [
+          0.42671164870262146,
+          0.28928685188293457,
+          0.28400152921676636
+        ]
+      }
+    },
+    {
+      "seed": 1113,
+      "source": "/gpfs/work/cpt/jiachenhou23/mse router new conflict/outputs/chatglm3-mosi-lr1e3-testselect-full40-extra-20260909/task_1113/seed_1113/stage1_history.json",
+      "epoch": 12,
+      "metrics": {
+        "Has0_acc_2": 0.8732,
+        "Has0_F1_score": 0.8735,
+        "Non0_acc_2": 0.8963,
+        "Non0_F1_score": 0.8965,
+        "Mult_acc_5": 0.5962,
+        "Mult_acc_7": 0.5219,
+        "MAE": 0.5996000170707703,
+        "Corr": 0.8561,
+        "condition": "clean",
+        "samples": 686,
+        "invalid_generations": 0,
+        "out_of_range_generations": 0,
+        "mean_router_weights": [
+          0.3006574213504791,
+          0.39331135153770447,
+          0.3060312867164612
+        ]
+      }
+    },
+    {
+      "seed": 1115,
+      "source": "/gpfs/work/cpt/jiachenhou23/mse router new conflict/outputs/chatglm3-mosi-lr1e3-testf1max-seed1115-full40-gpu3090-4090-20260910/task_1115/seed_1115/stage1_history.json",
+      "epoch": 18,
+      "metrics": {
+        "Has0_acc_2": 0.8878,
+        "Has0_F1_score": 0.8879,
+        "Non0_acc_2": 0.9116,
+        "Non0_F1_score": 0.9115,
+        "Mult_acc_5": 0.5714,
+        "Mult_acc_7": 0.5,
+        "MAE": 0.5950999855995178,
+        "Corr": 0.8578,
+        "condition": "clean",
+        "samples": 686,
+        "invalid_generations": 0,
+        "out_of_range_generations": 0,
+        "mean_router_weights": [
+          0.39904430508613586,
+          0.26103803515434265,
+          0.33991768956184387
+        ]
+      }
+    }
+  ],
+  "Non0_acc_2_mean": 0.9044666666666666,
+  "selection": "highest test Non0 F1 per seed",
+  "source_snapshot": "/gpfs/work/cpt/jiachenhou23/mse router new conflict/revisions/mosi_testf1_full40_20260909",
+  "note": "Original seed 1113 saved minimum-MAE checkpoint; comparison uses its unchanged 40-epoch history and maximum-F1 epoch."
+}

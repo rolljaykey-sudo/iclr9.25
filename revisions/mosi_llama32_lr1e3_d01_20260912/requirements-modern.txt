@@ -1,0 +1,3 @@
+transformers==4.44.2
+tokenizers==0.19.1
+# 其他依赖通过 baseline_dependencies.pth 继承原始 .venv-seed1112 环境。

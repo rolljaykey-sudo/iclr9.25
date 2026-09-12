@@ -1,0 +1,1 @@
+CPU configuration/import checks passed. Mock training control-flow check passed: all 40 epochs despite 35 epochs without improvement, test loader used, earliest tied minimum selected, best checkpoint reloaded for final test. GPU preflight runs inside each submitted seed process.

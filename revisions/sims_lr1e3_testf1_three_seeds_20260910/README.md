@@ -1,0 +1,1 @@
+SIMS conflict V4 / ChatGLM3; seeds 1112,1113. Exactly 40 epochs, maximum test F1_score checkpoint selection, earliest on ties; no calibration or early stopping. Adapter LR .005, head/router LR .001, dropout .1; batch 4 x accumulation 4. Original SIMS inputs, losses, and preprocessing retained. SAT3090, one GPU per seed.

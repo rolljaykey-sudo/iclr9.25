@@ -1,19 +1,15 @@
+# 任意层级的实验输出均不纳入版本管理。
+outputs/
+
+# 本地解释器环境与缓存不随源码发布。
+.venv*
 __pycache__/
 *.py[cod]
-.venv*/
+.pytest_cache/
+.mypy_cache/
+
+# 本地凭据和编辑器临时文件。
 .env
 .env.*
-outputs/
-logs/
-checkpoints/
-datasets/
-*.pt
-*.pth
-*.pkl
-*.safetensors
-*.bin
-*.log
-*.out
-*.err
+*.swp
 .DS_Store
-
