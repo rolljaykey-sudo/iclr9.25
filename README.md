@@ -1,65 +1,133 @@
-# ChatGLM3：四个情感数据集
+# conflict_text_pseudo — MOSI / SIMS, BEST MAE
 
-仅保留 ChatGLM3 在 **MOSI、MOSEI、SIMS、SIMS V2** 上的四份代码，各数据集一份。
-源码已补充中文注释；所有 `outputs`、虚拟环境、缓存和其他实验版本均未打包。
-本地目录：`/gpfs/work/cpt/jiachenhou23/final code`。
+本分支整理 `conflict_text_pseudo*` 实验，只提供 **MOSI、SIMS 的 ChatGLM3 代码**。
+包含模型、训练器、配置、Slurm 示例及检查；不包含权重、数据集、训练结果、日志、环境或缓存。
 
-| 目录 | 数据集 | 选模规则 | 适配器 / 诊断头与路由器学习率 | 路由器与诊断头 dropout |
-| --- | --- | --- | --- | --- |
-| [mosi](mosi/) | MOSI | 测试集 `Non0_F1_score` 最大 | 0.001 / 0.001 | 0.1 |
-| [mosei](mosei/) | MOSEI | 测试集 `Non0_F1_score` 最大 | 0.0001 / 0.0001 | 0.1 |
-| [sims](sims/) | SIMS | 测试集 `F1_score` 最大 | 0.001 / 0.001 | 0.0 |
-| [simsv2](simsv2/) | SIMS V2 | 测试集 `MAE` 最小 | 0.0001 / 0.0001 | 0.3 |
+## 模型与输入策略
 
-四份代码均沿用所选源版本的 40 轮联合训练、有效批量 16 和随机种子。
-指标并列时保留最早轮次，最后重新加载选中的检查点评估；不执行温度校准。
-SIMS V2 保留原来的测试集 MAE 选模方式。
+- 冻结 ChatGLM3 骨干；音频、视觉编码器生成各自的伪 token。
+- **文本诊断分支保留**：原始词嵌入经过带 padding mask 的注意力池化、投影和适配器，生成 4 个文本伪 token，用共享骨干与序数诊断头输出分布。
+- 最终预测仍输入有序原始文本和门控后的音视频伪 token。
+- 根据三模态诊断概率、Wasserstein-1 冲突、熵和模态存在标识计算路由权重；路由输入保留 `detach`。
+- 随机模态丢弃、音频加噪、视觉随机遮挡和温度校准全部关闭；三个温度固定为 1。
+- 配置中的 `dropout` 仅控制共享诊断头和路由器，音视频 LSTM 的 dropout 保留原配置 0。
 
-## 文件说明
+## BEST MAE 的确切含义
 
-每个数据集目录包含：
+延续本次实验指定的 **test MAE** 口径：每个 seed 训练完整 40 轮，每轮评估 test，保存 **MAE 最低**的检查点；完全相同时保留最早轮次。
+训练结束重新加载这个检查点，生成最终 `result.json`。Acc/F1、MAE、Corr 等全部来自**同一个 MAE 最低的轮次**。
+这属于 test-based checkpoint selection，并非独立测试集上的无选模评估；报告结果时应保留这一说明。
 
-- `mse_router/model.py`：ChatGLM3 专用模型、音视频编码与伪 token、诊断头、冲突路由、生成及损失。
-- `mse_router/math_utils.py`、`sequence.py`、`data.py`：数学工具、有序 token 整理和数据处理。
-- `mse_router/trainer.py`：联合训练、测试集选模、检查点保存与评估。
-- `mse_router/diagnostics.py`：固定输入下的路由权重诊断工具。
-- `scripts/run_chatglm3_<数据集>.py`：该数据集的唯一运行入口。
-- `scripts/experiment.py`、`chatglm_setup.py`：预检、配置、文件检查和结果汇总。
-- `scripts/train.slurm`：该数据集的作业脚本，代码和输出位置已指向本副本。
+`stage1.pt`、`final.pt`、结果元数据和跨 seed 汇总均使用 MAE/min。
+旧版按 F1 保存的 `result.json` 不可直接作为本分支的 BEST MAE 结果；汇总入口会拒绝这种混用。
+整理前的权重和旧预检记录不随代码发布，也不能直接复用源码指纹不同的预检。
 
-数据集配置分别记录在 `launch_spec.json` 或 `configs/<数据集>.json` 中。
-保留版本的准确来源和本次检查结果见 [EXPORT_MANIFEST.json](EXPORT_MANIFEST.json)。
+## 配置
 
-## 环境和运行
+每个数据集只有一套实现，学习率/dropout 通过 `--config` 选择；两组优化器使用配置中的 `adapter_lr` 和 `head_router_lr`。
 
-仍使用工作区已有的 `MSE-Adapter/MSE-ChatGLM3-6B` 上游组件、数据与
-`models/THUDM/chatglm3-6b-base` 权重。可用 `MSE_ADAPTER_ROOT` 指定上游根目录，
-用 `--dataset-path`、`--model-path`、`--output-root` 指定本地资源位置。
-Slurm 脚本沿用原实验的共享 Python 解释器和资源参数，实际提交前应核对可用资源。
-本次整理没有启动训练。
+| 数据集 | 已整理的学习率 | dropout | 默认配置 |
+| --- | --- | --- | --- |
+| MOSI | 0.00005、0.0001、0.0003、0.0005、0.001 | 0.1 | `mosi/configs/lr3e4_d01.json` |
+| MOSI | 0.0001、0.0003 | 0.0 | 显式选择对应 `d00` 文件 |
+| SIMS | 0.0001、0.0005、0.001 | 0.0 | `sims/configs/lr1e3_d00.json` |
 
-在适用的 Python 环境中，先查看对应入口的参数，例如：
+这些是运行预设，不代表完整 MAE 选模实验均已重跑。每个预设使用 seed **1111、1113、1115**；40 轮，microbatch=4，梯度累积=4，有效 batch=16。
+默认配置用于提供明确的启动方式，不声明它们在全部预设中最优。
+
+## 外部资源与环境
+
+使用 Python 3.10。`requirements.txt` 记录原运行环境的主要依赖版本；PyTorch/CUDA 构建应与分配到的 GPU 相容。
+本实现继续依赖外部 [MSE-Adapter](https://github.com/AZYoung233/MSE-Adapter) 中的 `MSE-ChatGLM3-6B` 配置、数据加载器、指标和 ChatGLM3 模型接口。
+设定 `MSE_ADAPTER_ROOT` 指向该仓库根目录；未设时默认查找本仓库的 `external/MSE-Adapter`。
+源实验的上游文件 SHA-256 记录于 `EXPORT_MANIFEST.json`，方便核对本地依赖版本。
+
+模型文件从本地目录读取，不自动下载。准备 ChatGLM3-6B-base 权重及 tokenizer 文件，设定 `CHATGLM_MODEL_PATH`，或使用 `--model-path`。
+权重所需文件清单由 `scripts/chatglm_setup.py` 检查。
+
+数据同样单独准备：
+
+| 数据集 | 默认位置（相对仓库） | train / valid / test |
+| --- | --- | --- |
+| MOSI | `data/CMU-MOSI/Processed/unaligned_50.pkl` | 1284 / 229 / 686 |
+| SIMS | `data/CH-SIMS/unaligned_39_router_fp16_safe.pkl` | 1368 / 456 / 457 |
+
+可通过 `MOSI_DATASET_PATH`、`SIMS_DATASET_PATH` 或 `--dataset-path` 指定现有文件。
+配置保留源实验的数据大小与 SHA-256，预检会校验。
+SIMS 使用源实验已处理的 fp16-safe 文件：视觉维度 288、289、290 中绝对值大于 10000 的值替换为 0；记录在 SIMS 配置的 `deterministic_sanitization` 中。
+这不是训练时的随机遮挡。原始未经处理的 SIMS 文件不能冒充该输入。
+MOSI/SIMS 的上游配置模板分别复用上游内部的 `mosei` / `simsv2` 参数块，再覆盖数据集、特征维度和数据路径；它们不是本分支额外支持的数据集。
+
+## 运行
+
+先设置外部资源（路径均为示例）：
 
 ```bash
-python mosi/scripts/run_chatglm3_mosi.py --help
+export PROJECT_ROOT="$(pwd)"
+export MSE_ADAPTER_ROOT=/path/to/MSE-Adapter
+export CHATGLM_MODEL_PATH=/path/to/chatglm3-6b-base
+export MOSI_DATASET_PATH=/path/to/unaligned_50.pkl
+export SIMS_DATASET_PATH=/path/to/unaligned_39_router_fp16_safe.pkl
+export PYTHON_BIN=/path/to/python
 ```
 
-GPU 预检和训练应在有效 Slurm GPU 分配中执行：
+查看参数不需要 GPU：
 
 ```bash
-python mosi/scripts/run_chatglm3_mosi.py preflight
-python mosi/scripts/run_chatglm3_mosi.py train --seed 1111
+"$PYTHON_BIN" mosi/scripts/run_chatglm3_mosi.py --help
+"$PYTHON_BIN" sims/scripts/run_chatglm3_sims.py --help
 ```
 
-其余数据集使用各自同名入口。默认结果位于 `<数据集>/outputs/`；
-批处理脚本按 `task_<seed>/seed_<seed>/` 隔离结果。
-提交批处理脚本前先创建该数据集的 `outputs/slurm/` 日志目录。
-重新运行需使用本副本生成的预检记录；旧目录的预检源码散列不再适用。
-路径含空格，Shell 中请加引号。
+GPU 预检和训练必须在有效的 Slurm GPU 分配内执行。示例：
 
-## 本次检查
+```bash
+"$PYTHON_BIN" mosi/scripts/run_chatglm3_mosi.py preflight \
+  --config mosi/configs/lr3e4_d01.json
+"$PYTHON_BIN" mosi/scripts/run_chatglm3_mosi.py train --seed 1111 \
+  --config mosi/configs/lr3e4_d01.json
+```
 
-四个数据集均通过轻量 ChatGLM 接口替身的模型对照：初始参数、完整及缺失模态前向、
-损失、梯度和生成结果与源实现一致，冻结骨干保持无参数梯度。
-训练、评估和选模方法的语法树与源版本一致；配置、文件元数据和选模模拟检查通过。
-这些检查未加载完整预训练权重，也未执行完整 GPU 训练。
+直接运行默认输出到 `mosi/outputs/lr3e4_d01/seed_1111/`。
+为 SIMS 替换入口与配置文件即可；资源路径、输出位置可通过 CLI 覆盖。
+改变配置或代码后需要重新运行预检。已有完整结果请使用新的 `--output-root`，避免覆盖。
+
+### Slurm 数组
+
+脚本每个任务分配一张 GPU，数组下标 0/1/2 对应 1111/1113/1115。
+账户、分区、QoS 由提交者提供，不在公开脚本中硬编码个人账户。提交前配置兼容的环境并创建日志目录，例如：
+
+```bash
+export EXPERIMENT_CONFIG="$PROJECT_ROOT/mosi/configs/lr3e4_d01.json"
+export OUTPUT_ROOT="$PROJECT_ROOT/mosi/outputs/lr3e4_d01"
+mkdir -p "$OUTPUT_ROOT/slurm"
+sbatch --account=YOUR_ACCOUNT --partition=YOUR_GPU_PARTITION --qos=YOUR_QOS \
+  --output="$OUTPUT_ROOT/slurm/%x-%A_%a.out" \
+  --error="$OUTPUT_ROOT/slurm/%x-%A_%a.err" \
+  "$PROJECT_ROOT/mosi/scripts/train.slurm"
+```
+
+SIMS 使用 `sims/scripts/train.slurm` 与 `sims/configs/lr1e3_d00.json`，同时更换 `OUTPUT_ROOT`。
+脚本在 GPU 上先做前向/反向/生成预检，成功后才训练。任务输出为 `OUTPUT_ROOT/task_<seed>/seed_<seed>/`；`execution_claim` 阻止重复任务覆盖。
+`sbatch` 使用的是提交时环境；如果依赖集群模块或特定动态库，需在提交前正确配置，或在脚本中加入本地环境初始化。
+
+### 三个 seed 的 mean
+
+全部任务完成后运行：
+
+```bash
+"$PYTHON_BIN" mosi/scripts/run_chatglm3_mosi.py aggregate \
+  --config mosi/configs/lr3e4_d01.json \
+  --output-root "$OUTPUT_ROOT"
+```
+
+输出 `seed_summary.json`，包含三个 seed 的值、mean 和样本标准差；支持直接运行和数组目录结构。
+MAE/Corr 保持原始数值；准确率/F1 在 JSON 中为 0–1，展示百分数时乘 100。
+
+## 验证
+
+```bash
+python -B -m unittest discover -s tests -v
+```
+
+CPU 检查使用轻量替身覆盖最低 MAE 与最高 F1 不同轮次、MAE 并列、40 轮保存/重载和最终结果一致性，不加载完整模型权重。
+真实训练仍需脚本内的 GPU 预检；本次代码整理不声称已完成新版本的完整训练。

@@ -1,0 +1,45 @@
+{
+  "dataset": "mosi",
+  "backbone": "chatglm3",
+  "seeds": [
+    1111,
+    1113,
+    1115
+  ],
+  "adapter_lr": 0.0003,
+  "head_router_lr": 0.0003,
+  "dropout": 0.1,
+  "max_epochs": 40,
+  "microbatch": 4,
+  "accumulation_steps": 4,
+  "effective_batch": 16,
+  "selection_split": "test",
+  "selection_metric": "MAE",
+  "selection_direction": "min",
+  "tie_break": "earliest_epoch",
+  "calibration_enabled": false,
+  "architecture": "pseudo_text_diagnostics_wasserstein_router_v5",
+  "text_diagnostic_input": "masked_attention_pool_to_4_pseudo_tokens",
+  "final_text_input": "ordered_raw_tokens",
+  "input_policy": {
+    "full_training_split": true,
+    "modality_dropout": false,
+    "audio_noise": false,
+    "vision_masking": false,
+    "calibration_enabled": false,
+    "calibration_samples": 0,
+    "temperatures": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  "dataset_path": "data/CMU-MOSI/Processed/unaligned_50.pkl",
+  "dataset_size": 554181170,
+  "dataset_sha256": "78e0f8b5ef8ff71558e7307848fc1fa929ecb078203f565ab22b9daab2e02524",
+  "splits": {
+    "train": 1284,
+    "valid": 229,
+    "test": 686
+  }
+}

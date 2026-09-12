@@ -9,7 +9,7 @@ PROJECT_DIR = Path(__file__).resolve().parents[1]
 def configure_harness():
     upstream = harness.ADAPTER_DIR / "MSE-ChatGLM3-6B"
     harness.UPSTREAM_DIR = upstream
-    harness.DEFAULT_MODEL = Path("/gpfs/work/cpt/jiachenhou23/models/THUDM/chatglm3-6b-base")
+    harness.DEFAULT_MODEL = harness.DEFAULT_MODEL
     harness.DEFAULT_OUTPUT_ROOT = PROJECT_DIR / "outputs"
     # 预检绑定本地源码及上游实际使用的配置、数据和 ChatGLM 实现。
     harness.ROUTER_SOURCE_FILES = (

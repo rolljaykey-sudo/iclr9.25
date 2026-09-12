@@ -30,14 +30,29 @@ from .sequence import compact_left_padding
 
 LOGGER = logging.getLogger("mse_router")
 
-ARCHITECTURE = "ordered_text_diagnostics_wasserstein_router_v4"
-ARCHITECTURE_VERSION = 4
+ARCHITECTURE = "pseudo_text_diagnostics_wasserstein_router_v5"
+ARCHITECTURE_VERSION = 5
 CONFLICT_METRIC = "wasserstein_1_normalized"
 MODALITIES = ("text", "audio", "vision")
 NUMBER_PATTERN = re.compile(r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)")
 
 
 # 按真实序列长度打包音视频特征，取末层隐藏状态并投影到统一特征空间。
+class MaskedAttentionPool(nn.Module):
+    def __init__(self, hidden_size: int) -> None:
+        super().__init__()
+        self.score = nn.Linear(hidden_size, 1)
+
+    def forward(self, tokens: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
+        valid = mask.to(dtype=torch.bool)
+        if bool((valid.sum(dim=1) == 0).any()):
+            raise ValueError("every text sample must contain at least one valid token")
+        scores = self.score(tokens).squeeze(-1)
+        scores = scores.masked_fill(~valid, torch.finfo(scores.dtype).min)
+        weights = F.softmax(scores, dim=1)
+        return torch.sum(tokens * weights.unsqueeze(-1), dim=1)
+
+
 class PackedLSTMEncoder(nn.Module):
     # 初始化变长序列 LSTM、丢弃层和输出投影；单层 LSTM 不启用层间 dropout。
     def __init__(
@@ -116,12 +131,12 @@ class MultiScaleProjector(nn.Module):
 # 将 30 维诊断特征映射为三模态权重；缺失模态的权重固定为零。
 class Router(nn.Module):
     # 建立两层路由网络，并将末层初始化为零以获得均匀初始权重。
-    def __init__(self, input_size: int = 30, hidden_size: int = 64) -> None:
+    def __init__(self, input_size: int = 30, hidden_size: int = 64, dropout: float = 0.1) -> None:
         super().__init__()
         self.network = nn.Sequential(
             nn.Linear(input_size, hidden_size),
             nn.GELU(),
-            nn.Dropout(0.0),
+            nn.Dropout(dropout),
             nn.Linear(hidden_size, 3),
         )
         # 输出层从零开始，使初始 logits 一致，现存模态获得均匀权重。
@@ -222,11 +237,10 @@ class ChatGLMMseRouter(nn.Module):
             nn.LayerNorm(self.hidden_size),
             nn.Linear(self.hidden_size, 256),
             nn.GELU(),
-            nn.Dropout(0.0),
+            nn.Dropout(float(getattr(args, "router_dropout", 0.1))),
             nn.Linear(256, 7),
         )
-        self.router = Router(30, 64)
-        self.log_temperatures = nn.Parameter(torch.zeros(3), requires_grad=False)
+        self.router = Router(30, 64, dropout=float(getattr(args, "router_dropout", 0.1)))
         self.register_buffer("anchors", torch.linspace(-1.0, 1.0, 7), persistent=True)
         self.register_buffer("architecture_version", torch.tensor(ARCHITECTURE_VERSION), persistent=True)
 
@@ -237,6 +251,19 @@ class ChatGLMMseRouter(nn.Module):
             "diagnostic_prompt_ids", self._token_ids(diagnostic_prompt)
         )
         self._register_prompt("task_prompt_ids", self._token_ids(self.task_prompt))
+
+        # Append the text branch without changing existing module initialization
+        # or the global RNG stream used by the baseline training loader.
+        with torch.random.fork_rng(devices=[]):
+            self.text_pool = MaskedAttentionPool(self.hidden_size)
+            self.text_projection = nn.Sequential(
+                nn.Linear(self.hidden_size, 256), nn.GELU()
+            )
+            self.text_adapter = MultiScaleProjector(
+                256, self.hidden_size, self.pseudo_tokens
+            )
+            self.text_modality_embedding = nn.Parameter(torch.empty(self.hidden_size))
+            nn.init.normal_(self.text_modality_embedding, mean=0.0, std=0.02)
 
     # 将提示文本编码成不自动附加特殊标记的 token ID 列表。
     def _token_ids(self, text: str) -> list[int]:
@@ -249,24 +276,10 @@ class ChatGLMMseRouter(nn.Module):
             name, torch.tensor(list(ids), dtype=torch.long), persistent=False
         )
 
-    # 将对数温度转回正数，并限制在校准允许的 [0.05, 10] 区间。
+    # 本实验没有温度校准，日志中的温度恒为 1，不参与任何参数更新。
     @property
     def temperatures(self) -> torch.Tensor:
-        return self.log_temperatures.exp().clamp(0.05, 10.0)
-
-    # 检查三模态温度的形状、有限性和范围，然后无梯度地更新对数温度。
-    def set_temperatures(self, temperatures: torch.Tensor | Iterable[float]) -> None:
-        values = torch.as_tensor(
-            temperatures,
-            device=self.log_temperatures.device,
-            dtype=self.log_temperatures.dtype,
-        )
-        if values.shape != (3,) or not bool(torch.isfinite(values).all()):
-            raise ValueError("temperatures must contain three finite values")
-        if bool(((values < 0.05) | (values > 10.0)).any()):
-            raise ValueError("temperatures must lie in [0.05, 10.0]")
-        with torch.no_grad():
-            self.log_temperatures.copy_(values.log())
+        return torch.ones(3, device=self.anchors.device, dtype=torch.float32)
 
     # 取得当前骨干的输入词嵌入层，供提示、原始文本和生成 token 共用。
     def _embedding_layer(self) -> nn.Module:
@@ -276,7 +289,7 @@ class ChatGLMMseRouter(nn.Module):
     def _expanded_prompt(self, ids: torch.Tensor, batch_size: int) -> torch.Tensor:
         return self._embedding_layer()(ids.unsqueeze(0).expand(batch_size, -1))
 
-    # 编码音频与视觉并加上模态标识；文本槽只占位，实际文本通过原始 token 进入模型。
+    # 三模态编码成伪 Token；文本伪 Token 仅供诊断，最终预测保留原始文本。
     def encode_modalities(
         self,
         text: tuple[torch.Tensor, torch.Tensor],
@@ -297,8 +310,14 @@ class ChatGLMMseRouter(nn.Module):
         )
         type_embeddings = self.modality_embeddings.to(dtype=av_pseudo.dtype)
         av_pseudo = av_pseudo + type_embeddings[None, :, None, :]
-        # 保持 [批次, 文本/音频/视觉, 伪 token, 隐藏维度] 索引；文本占位槽不参与诊断。
-        pseudo = torch.cat([torch.zeros_like(av_pseudo[:, :1]), av_pseudo], dim=1)
+        text_tensor, _ = text
+        text_embeddings = self._embedding_layer()(text_tensor[:, 0, :].long())
+        text_features = self.text_projection(
+            self.text_pool(text_embeddings, text_tensor[:, 1, :])
+        )
+        text_pseudo = self.text_adapter(text_features)
+        text_pseudo = text_pseudo + self.text_modality_embedding.to(text_pseudo.dtype)[None, None, :]
+        pseudo = torch.cat([text_pseudo[:, None], av_pseudo], dim=1)
         if presence is not None:
             pseudo = pseudo * presence[:, :, None, None].to(dtype=pseudo.dtype)
         return pseudo
@@ -358,30 +377,27 @@ class ChatGLMMseRouter(nn.Module):
             **common,
         )
 
-    # 分别诊断有序原始文本与音视频伪 token，输出形状为 [B, 3, 7] 的情感 logits。
+    # 三模态分别使用伪 Token 诊断，共享冻结 LLM 和情感诊断头。
     def diagnostic_logits(
         self, pseudo: torch.Tensor, text_tensor: torch.Tensor,
         presence: torch.Tensor | None = None,
     ) -> torch.Tensor:
-        """Read ordered text; diagnose A/V independently using the same LLM/head."""
+        """Diagnose text/A/V pseudo tokens independently using the same LLM/head."""
         batch_size = pseudo.shape[0]
         if presence is None:
             presence = torch.ones(batch_size, 3, device=pseudo.device)
-        text_mask = text_tensor[:, 1, :].long() * presence[:, :1].long()
-        # 文本嵌入和语言模型均冻结，此处仅诊断头需要梯度；
-        # 下方音视频诊断前向仍保留梯度，以训练对应适配器。
-        with torch.no_grad():
-            raw_text = self._embedding_layer()(text_tensor[:, 0, :].long())
-            text_sequence = self._wrapped_prefix(raw_text, self.diagnostic_prompt_ids)
-            prefix_size = self.bos_ids.numel() + self.wrapper_before_ids.numel()
-            suffix_size = self.wrapper_after_ids.numel() + self.diagnostic_prompt_ids.numel()
-            text_attention = torch.cat([
-                text_mask.new_ones(batch_size, prefix_size), text_mask,
-                text_mask.new_ones(batch_size, suffix_size),
-            ], dim=1)
-            text_sequence, text_attention, _ = compact_left_padding(text_sequence, text_attention)
-            text_positions = (text_attention.cumsum(-1) - 1).clamp_min(0)
-            text_hidden = self._backbone_last_hidden(text_sequence, text_attention, text_positions)
+        text_mask = presence[:, :1].long().expand(-1, self.pseudo_tokens)
+        # Keep autograd through the frozen backbone to train the text adapter.
+        text_sequence = self._wrapped_prefix(pseudo[:, 0], self.diagnostic_prompt_ids)
+        prefix_size = self.bos_ids.numel() + self.wrapper_before_ids.numel()
+        suffix_size = self.wrapper_after_ids.numel() + self.diagnostic_prompt_ids.numel()
+        text_attention = torch.cat([
+            text_mask.new_ones(batch_size, prefix_size), text_mask,
+            text_mask.new_ones(batch_size, suffix_size),
+        ], dim=1)
+        text_sequence, text_attention, _ = compact_left_padding(text_sequence, text_attention)
+        text_positions = (text_attention.cumsum(-1) - 1).clamp_min(0)
+        text_hidden = self._backbone_last_hidden(text_sequence, text_attention, text_positions)
         text_logits = self.ordinal_head(text_hidden)
 
         flattened = pseudo[:, 1:].reshape(
@@ -401,7 +417,7 @@ class ChatGLMMseRouter(nn.Module):
         self, logits: torch.Tensor, presence: torch.Tensor
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         probabilities = F.softmax(
-            logits.float() / self.temperatures[None, :, None], dim=-1
+            logits.float(), dim=-1
         )
         present = presence.to(dtype=torch.bool)
         uniform = torch.full_like(probabilities, 1.0 / probabilities.shape[-1])
@@ -605,7 +621,7 @@ class ChatGLMMseRouter(nn.Module):
         # 三模态共享同一软序数目标；辅助损失只统计实际存在的模态。
         ordinal_targets = soft_ordinal_targets(labels, self.anchors)
         per_modality = soft_cross_entropy(
-            logits.float() / self.temperatures[None, :, None],
+            logits.float(),
             ordinal_targets[:, None, :].expand(-1, 3, -1),
         )
         auxiliary_loss = (
@@ -754,10 +770,10 @@ class ChatGLMMseRouter(nn.Module):
 
     # 按阶段切换可训练参数：联合训练开放适配器、诊断头和路由器，骨干始终冻结。
     def set_stage(self, stage: str) -> None:
-        if stage not in {"stage1", "calibration", "eval"}:
+        if stage not in {"stage1", "eval"}:
             raise ValueError(f"unknown stage: {stage}")
         for name, parameter in self.named_parameters():
-            if name.startswith("llm.") or name == "log_temperatures":
+            if name.startswith("llm."):
                 parameter.requires_grad = False
             elif stage == "stage1":
                 parameter.requires_grad = True
@@ -767,6 +783,9 @@ class ChatGLMMseRouter(nn.Module):
     # 收集音视频编码器、适配器及模态嵌入，供优化器使用独立学习率。
     def adapter_parameters(self) -> list[nn.Parameter]:
         modules = (
+            self.text_pool,
+            self.text_projection,
+            self.text_adapter,
             self.audio_encoder,
             self.audio_adapter,
             self.vision_encoder,
@@ -774,6 +793,7 @@ class ChatGLMMseRouter(nn.Module):
         )
         parameters = [parameter for module in modules for parameter in module.parameters()]
         parameters.append(self.modality_embeddings)
+        parameters.append(self.text_modality_embedding)
         return parameters
 
     # 仅导出实验模块的参数与缓冲区，排除冻结语言模型的大体积权重。
@@ -789,7 +809,7 @@ class ChatGLMMseRouter(nn.Module):
     def load_experiment_state_dict(self, state: dict[str, torch.Tensor]) -> None:
         version = state.get("architecture_version")
         if version is None or int(version.item()) != ARCHITECTURE_VERSION:
-            raise RuntimeError("V4 conflict requires a new checkpoint; older JS Router weights are incompatible")
+            raise RuntimeError("Pseudo-text V5 requires a matching checkpoint; raw-text/JS Router weights are incompatible")
         incompatible = self.load_state_dict(state, strict=False)
         unexpected = list(incompatible.unexpected_keys)
         missing_non_llm = [

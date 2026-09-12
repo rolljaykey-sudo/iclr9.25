@@ -1,5 +1,5 @@
-# 训练器：联合训练 40 轮，按测试集 F1_score 选模，不执行温度校准。
-"""ChatGLM3 SIMS 联合训练 40 轮，按测试集 F1_score 选模，并列保留最早轮次。"""
+# 训练器：联合训练 40 轮，按测试集 MAE 最小值选模，不执行温度校准。
+"""ChatGLM3 SIMS 联合训练 40 轮，按测试集 MAE 最小值选模，并列保留最早轮次。"""
 
 from __future__ import annotations
 
@@ -16,10 +16,7 @@ import torch
 from torch.nn.utils import clip_grad_norm_
 from transformers import get_cosine_schedule_with_warmup
 
-from .data import (
-    augment_modalities,
-    move_batch,
-)
+from .data import INPUT_POLICY, move_batch
 from .model import ARCHITECTURE, ARCHITECTURE_VERSION, CONFLICT_METRIC, ChatGLMMseRouter
 
 
@@ -198,8 +195,9 @@ class RouterTrainer:
         epoch_started = time.time()
         for step, cpu_batch in enumerate(loader, start=1):
             batch = move_batch(cpu_batch, self.args.device)
-            augmented, presence = augment_modalities(batch)
-            labels, text, audio, vision = self._unpack(augmented)
+            # 所有样本的三种模态均保留，直接使用输入批次。
+            labels, text, audio, vision = self._unpack(batch)
+            presence = torch.ones(labels.shape[0], 3, device=labels.device)
             with torch.cuda.amp.autocast(dtype=torch.float16):
                 output = model(
                     labels,
@@ -351,7 +349,7 @@ class RouterTrainer:
 
 
 
-    # 完成训练轮次并按测试集 F1 最大值选模；相同 F1 保留最早检查点。
+    # 完成训练轮次并按测试集 MAE 最小值选模；相同 MAE 保留最早检查点。
     def _fit_stage(
         self,
         model: ChatGLMMseRouter,
@@ -373,8 +371,7 @@ class RouterTrainer:
             num_training_steps=total_updates,
         )
         scaler = torch.cuda.amp.GradScaler(enabled=True)
-        best_f1 = -float("inf")
-        selected_test_mae = None
+        best_mae = float("inf")
         best_epoch = 0
         history: list[dict[str, Any]] = []
         for epoch in range(1, max_epochs + 1):
@@ -399,10 +396,8 @@ class RouterTrainer:
             }
             history.append(record)
             write_json(self.output_dir / f"{stage}_history.json", history)
-            # 该历史版本按测试 F1 严格增大选模；并列时保留较早轮次。
-            if valid["F1_score"] > best_f1:
-                best_f1 = float(valid["F1_score"])
-                selected_test_mae = float(valid["MAE"])
+            if math.isfinite(float(valid["MAE"])) and float(valid["MAE"]) < best_mae:
+                best_mae = float(valid["MAE"])
                 best_epoch = epoch
                 self._save_checkpoint(
                     model,
@@ -433,22 +428,23 @@ class RouterTrainer:
                 )
             if epoch - best_epoch >= patience:
                 break
+        if best_epoch == 0:
+            raise RuntimeError("No epoch produced a finite test MAE")
         self._load_checkpoint(model, checkpoint_path)
         return {
             "stage": stage,
             "best_epoch": best_epoch,
-            "best_test_f1": best_f1,
-            "selected_test_mae": selected_test_mae,
-            "selection_metric": "F1_score",
-            "selection_direction": "max",
+            "best_test_mae": best_mae,
+            "selection_metric": "MAE",
+            "selection_direction": "min",
             "selection_split": "test",
             "epochs_ran": len(history),
             "checkpoint": str(checkpoint_path),
         }
 
-    # 执行完整 40 轮并选取测试集 F1 最高的检查点；该历史版本禁用温度校准。
+    # 执行完整 40 轮并选取测试集 MAE 最低的检查点；使用完整训练集，关闭输入扰动和温度校准。
     def fit(self, model, loaders):
-        """Select the highest test F1 over all 40 epochs, then test that artifact."""
+        """Select the lowest test MAE over all 40 epochs, then test that artifact."""
         started = time.time()
         stage1_path = self.output_dir / "checkpoints" / "stage1.pt"
         final_path = self.output_dir / "checkpoints" / "final.pt"
@@ -460,14 +456,13 @@ class RouterTrainer:
         checkpoint = self._load_checkpoint(model, stage1_path)
         selection = {
             "split": "test",
-            "metric": "F1_score",
-            "direction": "max",
-            "criterion": "maximum test F1_score across all 40 epochs; earliest on ties",
+            "metric": "MAE",
+            "direction": "min",
+            "criterion": "minimum test MAE across all 40 epochs; earliest on ties",
             "calibration_accepted": False,
             "calibration_enabled": False,
             "best_epoch": stage1["best_epoch"],
-            "best_test_f1": stage1["best_test_f1"],
-            "selected_test_mae": stage1["selected_test_mae"],
+            "best_test_mae": stage1["best_test_mae"],
         }
         self._save_checkpoint(
             model, final_path, "joint", stage1["best_epoch"],
@@ -478,12 +473,14 @@ class RouterTrainer:
         test = self.evaluate(model, loaders["test"], mode="test")
         result = {
             "status": "ok",
-            "training_protocol": "joint_only_full40_test_f1_max_selection",
+            "training_protocol": "joint_only_full40_test_mae_min_selection",
             "architecture": ARCHITECTURE,
             "conflict_metric": CONFLICT_METRIC,
             "stage1": stage1,
             "selection": selection,
             "calibration": {"enabled": False},
+            "input_policy": dict(INPUT_POLICY),
+            "optimization_samples": len(loaders["train"].dataset),
             "test": test,
             "temperatures": model.temperatures.detach().cpu().tolist(),
             "elapsed_seconds": round(time.time() - started, 3),

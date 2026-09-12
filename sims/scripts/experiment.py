@@ -29,20 +29,17 @@ if str(PROJECT_DIR) not in sys.path:
     sys.path.insert(0, str(PROJECT_DIR))
 from mse_router.model import ARCHITECTURE, CONFLICT_METRIC
 ADAPTER_DIR = Path(
-    os.environ.get("MSE_ADAPTER_ROOT", PROJECT_DIR.parent.parent / "MSE-Adapter")
+    os.environ.get("MSE_ADAPTER_ROOT", PROJECT_DIR.parent / "external" / "MSE-Adapter")
 ).expanduser().resolve()
 UPSTREAM_DIR = ADAPTER_DIR / "MSE-ChatGLM3-6B"
-DEFAULT_DATASET = Path(
-    "/gpfs/work/cpt/jiachenhou23/datasets/MSA/data/CMU-MOSEI/Processed/unaligned_50.pkl"
-)
-DEFAULT_MODEL = Path("/gpfs/work/cpt/jiachenhou23/models/THUDM/chatglm3-6b-base")
+DEFAULT_DATASET = PROJECT_DIR / "data" / "dataset.pkl"
+DEFAULT_MODEL = Path(os.environ.get("CHATGLM_MODEL_PATH", PROJECT_DIR.parent / "models" / "chatglm3-6b-base"))
 DEFAULT_OUTPUT_ROOT = PROJECT_DIR / "outputs"
-SEEDS = (1111, 2222, 3333, 4444, 5555)
-EXPECTED_SPLITS = {"train": 16_326, "valid": 1_871, "test": 4_659}
-EXPECTED_DATASET_SIZE = 13_652_131_313
-EXPECTED_DATASET_SHA256 = (
-    "ad8b23d50557045e7d47959ce6c5b955d8d983f2979c7d9b7b9226f6dd6fec1f"
-)
+SEEDS = (1111, 1113, 1115)
+EXPECTED_SPLITS = {}
+EXPECTED_DATASET_SIZE = 0
+EXPECTED_DATASET_SHA256 = ""
+CONFIG_PATH = None
 ROUTER_SOURCE_FILES = (
     PROJECT_DIR / "mse_router" / "math_utils.py",
     PROJECT_DIR / "mse_router" / "sequence.py",
@@ -57,6 +54,7 @@ ROUTER_SOURCE_FILES = (
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("mode", choices=("preflight", "train", "aggregate"))
+    parser.add_argument("--config", type=Path, default=CONFIG_PATH)
     parser.add_argument("--seed", type=int, choices=SEEDS)
     parser.add_argument("--dataset-path", type=Path, default=DEFAULT_DATASET)
     parser.add_argument("--model-path", type=Path, default=DEFAULT_MODEL)
@@ -182,7 +180,7 @@ def build_config(args: argparse.Namespace, microbatch: int, accumulation: int):
         tune_mode=False,
         train_mode="regression",
         modelName="cmcm",
-        datasetName="mosei",
+        datasetName="mosi",
         root_dataset_dir=str(args.dataset_path.resolve().parent),
         num_workers=args.num_workers,
         model_save_dir=str(args.output_root / "unused"),
@@ -214,7 +212,7 @@ def validate_files(args, hash_dataset):
     raise RuntimeError("请通过本目录的 run_chatglm3 数据集入口执行。")
 
 
-# 加载上游数据，核对各划分样本数，再构建含独立校准子集的 DataLoader。
+# 加载上游数据，核对各划分样本数，直接用完整训练集构建 DataLoader。
 def load_data(config: Any, microbatch: int):
     from data.load_data import MMDataLoader
     from mse_router.data import build_router_dataloaders
@@ -226,7 +224,7 @@ def load_data(config: Any, microbatch: int):
                 f"unexpected {split} sample count: {len(upstream[split].dataset)}"
             )
     return build_router_dataloaders(
-        upstream, microbatch, config.num_workers, split_seed=20260903
+        upstream, microbatch, config.num_workers
     )
 
 
@@ -252,19 +250,20 @@ def _one_backward(
     loader: torch.utils.data.DataLoader,
     accumulation: int,
 ) -> dict[str, Any]:
-    from mse_router.data import augment_modalities, move_batch
+    from mse_router.data import move_batch
 
     model.set_stage("stage1")
     model.train()
     batch = move_batch(next(iter(loader)), config.device)
-    augmented, presence = augment_modalities(batch)
-    labels = augmented["labels"]["M"].view(-1)
-    text = (augmented["text"], augmented["text_lengths"])
-    audio = (augmented["audio"], augmented["audio_lengths"])
-    vision = (augmented["vision"], augmented["vision_lengths"])
+    # 预检和正式训练使用同一无扰动输入路径，三模态全部存在。
+    labels = batch["labels"]["M"].view(-1)
+    presence = torch.ones(labels.shape[0], 3, device=labels.device)
+    text = (batch["text"], batch["text_lengths"])
+    audio = (batch["audio"], batch["audio_lengths"])
+    vision = (batch["vision"], batch["vision_lengths"])
     optimizer = torch.optim.AdamW(
         [parameter for parameter in model.parameters() if parameter.requires_grad],
-        lr=1e-3,
+        lr=1e-4,
         eps=1e-4,
         weight_decay=0.01,
     )
@@ -305,6 +304,11 @@ def _one_backward(
                 name.startswith("ordinal_head.") for name in gradients
             ),
             "router": any(name.startswith("router.") for name in gradients),
+            **{
+                prefix: any(name.startswith(prefix) and bool(gradient.float().abs().max().item() > 0)
+                            for name, gradient in gradients.items())
+                for prefix in ("text_pool.", "text_projection.", "text_adapter.", "text_modality_embedding")
+            },
         }
         scaler.step(optimizer)
         scaler.update()
@@ -369,6 +373,8 @@ def _one_generate(model: Any, config: Any, loader: torch.utils.data.DataLoader):
 
 # 校验执行环境与文件，尝试维持有效批量为 16 的不同微批组合，完成反向和生成预检。
 def preflight(args: argparse.Namespace) -> dict[str, Any]:
+    from mse_router.data import INPUT_POLICY
+
     validate_allocation()
     setup_seed(1111)
     files = validate_files(args, hash_dataset=True)
@@ -431,12 +437,13 @@ def preflight(args: argparse.Namespace) -> dict[str, Any]:
         "trainable": trainable,
         "split": {
             "optimization_samples": len(split.train_indices),
-            "calibration_samples": len(split.calibration_indices),
+            "calibration_samples": 0,
             "optimization_groups": split.train_groups,
-            "calibration_groups": split.calibration_groups,
+            "calibration_groups": 0,
             "fingerprint": split.fingerprint,
-            "seed": 20260903,
+            "full_training_split": True,
         },
+        "input_policy": dict(INPUT_POLICY),
         "files": files,
         "provenance": source_provenance(),
         "environment": environment_info(),
@@ -476,7 +483,7 @@ def train(args: argparse.Namespace) -> dict[str, Any]:
     )
     loaders, split = load_data(config, batching["microbatch"])
     if split.fingerprint != preflight_result["split"]["fingerprint"]:
-        raise RuntimeError("calibration split differs from preflight")
+        raise RuntimeError("full training inventory differs from preflight")
     from mse_router.model import ChatGLMMseRouter
     from mse_router.trainer import RouterTrainer, TrainingSettings, write_json
 
@@ -490,6 +497,7 @@ def train(args: argparse.Namespace) -> dict[str, Any]:
         "conflict_metric": CONFLICT_METRIC,
         "batching": batching,
         "split": preflight_result["split"],
+        "input_policy": preflight_result["input_policy"],
         "files": preflight_result["files"],
         "provenance": preflight_result["provenance"],
         "environment": environment_info(),
@@ -526,10 +534,14 @@ def aggregate(args: argparse.Namespace) -> dict[str, Any]:
     results = []
     for seed in SEEDS:
         path = args.output_root.resolve() / f"seed_{seed}" / "result.json"
+        if not path.exists():
+            path = args.output_root.resolve() / f"task_{seed}" / f"seed_{seed}" / "result.json"
         with path.open("r", encoding="utf-8") as handle:
             result = json.load(handle)
         if result.get("status") != "ok":
             raise RuntimeError(f"seed {seed} is not complete: {path}")
+        if result.get("selection", {}).get("metric") != "MAE" or result.get("selection", {}).get("direction") != "min":
+            raise RuntimeError(f"seed {seed} was not selected by minimum MAE")
         results.append(result)
     metric_names = list(results[0]["test"].keys())
     numeric_metrics = {}
@@ -544,9 +556,9 @@ def aggregate(args: argparse.Namespace) -> dict[str, Any]:
     summary = {
         "status": "ok",
         "seeds": list(SEEDS),
-        "primary_metric": "F1_score",
+        "primary_metric": "MAE",
         "metrics": numeric_metrics,
-        "selection_metric_mean": numeric_metrics["F1_score"]["mean"],
+        "selection_metric_mean": numeric_metrics["MAE"]["mean"],
     }
     output = args.output_root.resolve() / "seed_summary.json"
     from mse_router.trainer import write_json

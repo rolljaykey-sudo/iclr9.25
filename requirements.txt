@@ -1,0 +1,15 @@
+# Versions observed in the working Python 3.10 training environment.
+# Install the CUDA-compatible PyTorch build for your allocated GPU separately.
+torch==2.0.1
+transformers==4.36.1
+numpy==1.25.0
+scipy==1.10.1
+scikit-learn==1.2.2
+modelscope==1.10.0
+pandas==2.1.4
+sentencepiece==0.1.99
+tokenizers==0.15.0
+huggingface-hub==0.26.2
+safetensors==0.4.1
+einops==0.8.2
+protobuf==3.20.3
