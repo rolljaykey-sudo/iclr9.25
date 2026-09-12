@@ -1,0 +1,97 @@
+{
+  "baseline_revision": "/gpfs/work/cpt/jiachenhou23/mse router new conflict/revisions/sims_lr1e3_d00_testf1_three_seeds_20260910",
+  "baseline_runs": [
+    {
+      "seed": 1111,
+      "result": "/gpfs/work/cpt/jiachenhou23/mse router new conflict/outputs/glm_sims_lr1e3_d00_testf1_three_seeds_20260910/task_1111/seed_1111/result.json",
+      "test": {
+        "Mult_acc_2": 0.8315098468271335,
+        "Mult_acc_2_weak": 0.8044692737430168,
+        "Mult_acc_3": 0.6914660831509847,
+        "Mult_acc_5": 0.5361050328227571,
+        "F1_score": 0.8176415394284187,
+        "MAE": 0.3172866404056549,
+        "Corr": 0.7271983556421461,
+        "R_squre": 0.47343976189740666,
+        "condition": "clean",
+        "samples": 457,
+        "invalid_generations": 0,
+        "out_of_range_generations": 0,
+        "mean_router_weights": [
+          0.2982043921947479,
+          0.39383721351623535,
+          0.3079584240913391
+        ]
+      },
+      "best_epoch": 11
+    },
+    {
+      "seed": 1113,
+      "result": "/gpfs/work/cpt/jiachenhou23/mse router new conflict/outputs/glm_sims_lr1e3_d00_testf1_three_seeds_20260910/task_1113/seed_1113/result.json",
+      "test": {
+        "Mult_acc_2": 0.8205689277899344,
+        "Mult_acc_2_weak": 0.7821229050279329,
+        "Mult_acc_3": 0.6783369803063457,
+        "Mult_acc_5": 0.5054704595185996,
+        "F1_score": 0.8133033859722643,
+        "MAE": 0.36323851346969604,
+        "Corr": 0.6664100125218416,
+        "R_squre": 0.32176254005138616,
+        "condition": "clean",
+        "samples": 457,
+        "invalid_generations": 0,
+        "out_of_range_generations": 0,
+        "mean_router_weights": [
+          0.3290385603904724,
+          0.3471207022666931,
+          0.3238407075405121
+        ]
+      },
+      "best_epoch": 8
+    },
+    {
+      "seed": 1115,
+      "result": "/gpfs/work/cpt/jiachenhou23/mse router new conflict/outputs/glm_sims_lr1e3_d00_testf1_three_seeds_20260910/task_1115/seed_1115/result.json",
+      "test": {
+        "Mult_acc_2": 0.8271334792122538,
+        "Mult_acc_2_weak": 0.7988826815642458,
+        "Mult_acc_3": 0.6739606126914661,
+        "Mult_acc_5": 0.49671772428884026,
+        "F1_score": 0.8187389258363738,
+        "MAE": 0.35448578000068665,
+        "Corr": 0.6578674513012063,
+        "R_squre": 0.35514253075988766,
+        "condition": "clean",
+        "samples": 457,
+        "invalid_generations": 0,
+        "out_of_range_generations": 0,
+        "mean_router_weights": [
+          0.3198179006576538,
+          0.3458532691001892,
+          0.33432891964912415
+        ]
+      },
+      "best_epoch": 13
+    }
+  ],
+  "mean": {
+    "MAE": 0.3450036446253459,
+    "Corr": 0.6838252731550646,
+    "Mult_acc_2": 0.8264040846097739,
+    "F1_score": 0.8165612837456856
+  },
+  "copied_python_sha256": {
+    "mse_router/model.py": "77000f11ea2319a9b34e4fdb428ab6fe587d7918e8366548f22d8aefb1882594",
+    "mse_router/data.py": "cdd6851e6a946203cea8ae66d1b6dad657b7da02fd39c07dfd8cc4782e69b1d3",
+    "mse_router/trainer.py": "1d1aebe0c092d08e1a5d0e3e0d599529b01f7fb44c234e665a203ca0060c74a8",
+    "mse_router/__init__.py": "ad75675eae190322ca4f829c560064a42790083310c9848bf2e7eda017c39735",
+    "mse_router/diagnostics.py": "d94e68e0fb9838b4d7332d07299629b6b4fa3c5e6ebac2942c61512398bc5a3b",
+    "mse_router/backbone_model.py": "be4ab9e0710c02603d20550022db4f359ec3d22cf0af768a7419e769c7324e19",
+    "mse_router/sequence.py": "fa6232273b670d413408440ccfd5ea2ab5f0c7cae7cf7807a88d6730d45453b7",
+    "mse_router/math_utils.py": "6626b2ace3928f9860c1603de194faf66cfcb603da482e2d30c57d5edd3282c2",
+    "scripts/run_backbone_mosei_router.py": "eb89756fe228e923a7e90ef5c03a63cd75271b401f27e81d6f5aad0a5e3195a5",
+    "scripts/run_chatglm3_sims.py": "b1b7a05d5a99b0c688c801c674c02389b4d61258000705318b8b003ab833fa41",
+    "scripts/run_qwen_mosei_router.py": "9e26e47be84bf5d0bac82302a79e3c7751ae623125b8899ec3cade180123a0c5"
+  },
+  "preserved": "SIMS dataset, splits, prompts, score range, loss, optimizer, dropout, token counts, 40 epochs and maximum test-F1 selection; only local backbone and required boundary compatibility change."
+}

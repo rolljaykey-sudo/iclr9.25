@@ -1,0 +1,14 @@
+{
+  "submitted_tasks": 4,
+  "automatically_awaiting_sat_slot": 5,
+  "dispatcher_pid": 829331,
+  "observed_queue": [
+    "2927666_0|sat3090|sat8gpus|PENDING|(Priority)",
+    "2927665_0|sat3090|sat8gpus|PENDING|(Priority)",
+    "2927665_1|sat3090|sat8gpus|PENDING|(Priority)",
+    "2927665_2|sat3090|sat8gpus|PENDING|(Priority)"
+  ],
+  "scripts": "/gpfs/work/cpt/jiachenhou23/mse router new conflict/revisions/sims_backbone_lr1e3_d00_sat3090_20260912/scripts/train_{qwen18,llama32,llama2}.slurm",
+  "logs": "/gpfs/work/cpt/jiachenhou23/mse router new conflict/outputs/sims_backbone_lr1e3_d00_sat3090_20260912/<target>/slurm/<job-name>-<array-id>_<index>.{out,err}",
+  "expected_results": "/gpfs/work/cpt/jiachenhou23/mse router new conflict/outputs/sims_backbone_lr1e3_d00_sat3090_20260912/<target>/task_<seed>/seed_<seed>/result.json"
+}

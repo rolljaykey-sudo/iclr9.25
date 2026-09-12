@@ -1,0 +1,72 @@
+{
+  "status": "ok",
+  "target": "qwen18",
+  "python": "/gpfs/work/cpt/jiachenhou23/mse router new conflict/.venv-seed1112/bin/python",
+  "transformers": "4.36.1",
+  "settings": {
+    "adapter_lr": 0.001,
+    "head_router_lr": 0.001,
+    "weight_decay": 0.01,
+    "adam_epsilon": 0.0001,
+    "warmup_fraction": 0.1,
+    "gradient_clip": 1.0,
+    "accumulation_steps": 4,
+    "stage1_max_epochs": 40,
+    "stage1_patience": 41,
+    "progress_interval": 100,
+    "quality_gate_epoch": 0,
+    "quality_gate_max_mae": 0.72,
+    "quality_gate_min_corr": 0.3
+  },
+  "router_class": "QwenMseRouter",
+  "feature_dims": [
+    2048,
+    33,
+    709
+  ],
+  "seq_lens": [
+    50,
+    400,
+    55
+  ],
+  "tokenizer_class": "QWenTokenizer",
+  "pad_token_id": 151643,
+  "files": {
+    "dataset": {
+      "path": "/gpfs/work/cpt/jiachenhou23/MSE-Router/derived_data/CH-SIMS/unaligned_39_router_fp16_safe.pkl",
+      "size": 1228189354,
+      "mtime_ns": 1788718731985054354,
+      "sha256": null
+    },
+    "model": {
+      "backbone": "qwen18",
+      "path": "/gpfs/work/cpt/jiachenhou23/models/Qwen/Qwen-1_8B",
+      "files": {
+        "config.json": {
+          "size": 910,
+          "mtime_ns": 1788380112467328000
+        },
+        "tokenizer_config.json": {
+          "size": 173,
+          "mtime_ns": 1788380184156618000
+        },
+        "model.safetensors.index.json": {
+          "size": 14706,
+          "mtime_ns": 1788380180287874000
+        },
+        "model-00001-of-00002.safetensors": {
+          "size": 2039259008,
+          "mtime_ns": 1788380146668453224
+        },
+        "model-00002-of-00002.safetensors": {
+          "size": 1634419264,
+          "mtime_ns": 1788380175092632374
+        },
+        "qwen.tiktoken": {
+          "size": 2561218,
+          "mtime_ns": 1788380182211237000
+        }
+      }
+    }
+  }
+}

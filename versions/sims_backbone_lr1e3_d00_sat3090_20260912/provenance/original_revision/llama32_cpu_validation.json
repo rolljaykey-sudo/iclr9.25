@@ -1,0 +1,72 @@
+{
+  "status": "ok",
+  "target": "llama32",
+  "python": "/gpfs/work/cpt/jiachenhou23/mse router new conflict/.venv-mosi-modern/bin/python",
+  "transformers": "4.44.2",
+  "settings": {
+    "adapter_lr": 0.001,
+    "head_router_lr": 0.001,
+    "weight_decay": 0.01,
+    "adam_epsilon": 0.0001,
+    "warmup_fraction": 0.1,
+    "gradient_clip": 1.0,
+    "accumulation_steps": 4,
+    "stage1_max_epochs": 40,
+    "stage1_patience": 41,
+    "progress_interval": 100,
+    "quality_gate_epoch": 0,
+    "quality_gate_max_mae": 0.72,
+    "quality_gate_min_corr": 0.3
+  },
+  "router_class": "Llama32Router",
+  "feature_dims": [
+    3072,
+    33,
+    709
+  ],
+  "seq_lens": [
+    50,
+    400,
+    55
+  ],
+  "tokenizer_class": "PreTrainedTokenizerFast",
+  "pad_token_id": 128001,
+  "files": {
+    "dataset": {
+      "path": "/gpfs/work/cpt/jiachenhou23/MSE-Router/derived_data/CH-SIMS/unaligned_39_router_fp16_safe.pkl",
+      "size": 1228189354,
+      "mtime_ns": 1788718731985054354,
+      "sha256": null
+    },
+    "model": {
+      "backbone": "llama32",
+      "path": "/gpfs/work/cpt/jiachenhou23/models/Meta/Llama-3.2-3B",
+      "files": {
+        "config.json": {
+          "size": 844,
+          "mtime_ns": 1789156856469451000
+        },
+        "tokenizer_config.json": {
+          "size": 50500,
+          "mtime_ns": 1789156860762295000
+        },
+        "model.safetensors.index.json": {
+          "size": 20919,
+          "mtime_ns": 1789156858857507000
+        },
+        "model-00001-of-00002.safetensors": {
+          "size": 4965799096,
+          "mtime_ns": 1789157029981934080
+        },
+        "model-00002-of-00002.safetensors": {
+          "size": 1459729952,
+          "mtime_ns": 1789156891998017042
+        },
+        "tokenizer.json": {
+          "size": 9085657,
+          "mtime_ns": 1789156860380013270
+        }
+      }
+    }
+  }
+}

@@ -1,4 +1,18 @@
-# NAACL-10-12 — Original Router V2, no input augmentation
+# NAACL-10-12 — Multimodal sentiment experiments
+
+## Experiment versions
+
+| Version | Description | Documentation |
+| --- | --- | --- |
+| **2026-09-12 · CH-SIMS Wasserstein Router V4** | Qwen-1.8B / Llama-2-7B / Llama-3.2-3B; frozen backbones, joint training, LR 0.001, dropout 0, test-F1 checkpoint selection | **[中文版本说明](versions/sims_backbone_lr1e3_d00_sat3090_20260912/VERSION.md)** · [Source and reproduction](versions/sims_backbone_lr1e3_d00_sat3090_20260912/README.md) |
+| Original Router V2, no input augmentation | MOSEI / CH-SIMS v2; joint training, temperature calibration, Router-only training | Existing source and instructions below |
+
+The V4 experiment is archived in its own `versions/` directory with exact source
+hashes, bundled upstream dependencies and its original experiment protocol.
+Its training retains modality perturbations and selects checkpoints using test
+F1; see the version document before comparing its results with V2.
+
+## Original Router V2, no input augmentation
 
 Complete original Router V2 no-augmentation source for multimodal sentiment analysis.
 The original model, losses, optimizer settings, calibration and training stages are

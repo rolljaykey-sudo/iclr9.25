@@ -1,0 +1,24 @@
+# Direct/support dependencies observed in the original Qwen / Llama 2 runtime.
+# Install using Python 3.10; PyTorch runtime used CUDA 11.7.
+torch==2.0.1
+numpy==1.25.0
+pandas==2.1.4
+scipy==1.10.1
+scikit-learn==1.2.2
+transformers==4.36.1
+modelscope==1.10.0
+tokenizers==0.15.0
+sentencepiece==0.1.99
+protobuf==3.20.3
+einops==0.8.2
+tiktoken==0.5.2
+transformers-stream-generator==0.0.4
+safetensors==0.4.1
+datasets==2.15.0
+huggingface-hub==0.26.2
+addict==2.4.0
+sortedcontainers==2.4.0
+simplejson==3.19.2
+oss2==2.18.3
+gast==0.5.4
+yapf==0.40.2
