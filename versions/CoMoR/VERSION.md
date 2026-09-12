@@ -1,4 +1,8 @@
-# 版本说明：CH-SIMS 多骨干 Wasserstein Router V4
+# CoMoR 版本说明
+
+**CoMoR: Modeling Cross-Modal Conflict for Adaptive Evidence Routing**
+
+方法全称为 Conflict-Aware Modality Routing。本版本通过有序预测分布刻画跨模态冲突，并据此进行自适应证据路由；CH-SIMS 是当前版本的实验载体。
 
 整理日期：2026-09-12。版本标识：`sims_backbone_lr1e3_d00_sat3090_20260912`。
 

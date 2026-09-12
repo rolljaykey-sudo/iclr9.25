@@ -4,7 +4,7 @@
 
 | Version | Description | Documentation |
 | --- | --- | --- |
-| **2026-09-12 · CH-SIMS Wasserstein Router V4** | Qwen-1.8B / Llama-2-7B / Llama-3.2-3B; frozen backbones, joint training, LR 0.001, dropout 0, test-F1 checkpoint selection | **[中文版本说明](versions/sims_backbone_lr1e3_d00_sat3090_20260912/VERSION.md)** · [Source and reproduction](versions/sims_backbone_lr1e3_d00_sat3090_20260912/README.md) |
+| **CoMoR · Cross-Modal Conflict Modeling** | Qwen-1.8B / Llama-2-7B / Llama-3.2-3B; frozen backbones, joint training, LR 0.001, dropout 0, test-F1 checkpoint selection | **[中文版本说明](versions/CoMoR/VERSION.md)** · [Source and reproduction](versions/CoMoR/README.md) |
 | Original Router V2, no input augmentation | MOSEI / CH-SIMS v2; joint training, temperature calibration, Router-only training | Existing source and instructions below |
 
 The V4 experiment is archived in its own `versions/` directory with exact source
